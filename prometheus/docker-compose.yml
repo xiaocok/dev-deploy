@@ -39,7 +39,7 @@ services:
         restart: always
         ports:
             #grafana的web访问端口
-            - "9063:3000"
+            - "3000:3000"
         environment:
             # 登录用户名、密码
             - "GF_SECURITY_ADMIN_USER=admin"
