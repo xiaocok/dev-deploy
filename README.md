@@ -1,7 +1,7 @@
 # docker-compose
 docker-compose 部署的环境
 
-#### 相关功能<br/>
+#### 相关服务<br/>
 * [docker-ce安装](docker-ce)
 * [harbor部署](harbor)
 * [prometheus部署](prometheus/docker-compose.yml)
