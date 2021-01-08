@@ -2,8 +2,8 @@
 docker-compose 部署的环境
 
 #### 相关功能<br/>
-* [docker-ce安装](docker-ce/README.MD)
-* [harbor部署](harbor/README.MD)
+* [docker-ce安装](docker-ce)
+* [harbor部署](harbor)
 * [prometheus部署](prometheus/docker-compose.yml)
     * 支持服务器采集监控
     * 支持MySQL数据库采集监控
