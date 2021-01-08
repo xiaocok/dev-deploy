@@ -1,6 +1,6 @@
 # harbor部署
 
----
+
 ### 1、下载
 github地址：https://github.com/goharbor/harbor<br/>
 离线版：https://github.com/goharbor/harbor/releases/download/v2.1.2/harbor-offline-installer-v2.1.2.tgz<br/>
@@ -194,28 +194,28 @@ github地址：https://github.com/goharbor/harbor<br/>
     ``` 
     
 2. 进入postgresql命令行
-    ```postgresql
-   psql -h postgresql -d postgres -U postgres          #这要输入默认密码：root123 。
+    ```shell
+   psql -h postgresql -d postgres -U postgres          #这要输入默认密码：root123。
    psql -U postgres -d postgres -h 127.0.0.1 -p 5432   #或者用这个可以不输入密码。
     ```
 
 3. 切换到harbor所在的数据库
-    ```postgresql
+    ```shell
     \c registry
     ```
 
 4. 查看harbor_user表
-    ```postgresql
+    ```shell
     select * from harbor_user;
     ```
 
 5. 例如修改admin的密码，修改为初始化密码 Harbor12345 ，修改好了之后再可以从web ui上再改一次。
-    ```postgresql
+    ```shell
     update harbor_user set password='a71a7d0df981a61cbb53a97ed8d78f3e',salt='ah3fdh5b7yxepalg9z45bu8zb36sszmr' where username='admin';
     ```
 
 6. 退出 \q 退出postgresql，exit退出容器。
-    ```postgresql
+    ```shell
     \q
     exit
     ```
