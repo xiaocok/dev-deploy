@@ -4,7 +4,7 @@ docker-compose 部署的环境
 #### 相关服务<br/>
 * [docker-ce安装](docker-ce)
 * [harbor部署](harbor)
-* [prometheus部署](prometheus/docker-compose.yml)
+* [prometheus部署](prometheus)
     * 支持服务器采集监控
     * 支持MySQL数据库采集监控
     * 支持Redis数据库采集监控
