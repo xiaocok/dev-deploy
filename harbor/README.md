@@ -22,7 +22,7 @@ github地址：https://github.com/goharbor/harbor<br/>
     **生成证书颁发机构证书**<br/>
     1. 生成CA证书私钥<br/>
         ```shell
-            openssl genrsa -out ca.key 4096
+        openssl genrsa -out ca.key 4096
         ```
     
     2. 生成CA证书<br/>
