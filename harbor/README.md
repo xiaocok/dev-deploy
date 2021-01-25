@@ -160,6 +160,16 @@ github地址：https://github.com/goharbor/harbor<br/>
     docker login 域名/服务器IP:端口 -u admin -p Harbor12345
     ```
     
+    安装证书：<br/>
+    如果提示证书异常，则可以安装证书
+    ```shell
+    # 拷贝证书文件到信任证书
+    cp harbor.crt /etc/pki/ca-trust/source/anchors/
+
+    # 更新信任证书
+    update-ca-trust
+    ```
+    
 4. 推送镜像<br/>
     仓库地址: 域名/服务器IP:端口<br/>
     新建的项目: test<br/>
