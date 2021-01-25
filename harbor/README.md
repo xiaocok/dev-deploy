@@ -18,7 +18,7 @@ github地址：https://github.com/goharbor/harbor<br/>
     
     crt转换为pem(有些需要pem证书)
     ```shell
-    openssl x509 -in .crt -out ca.pem -outform PE
+    openssl x509 -in harbor.crt -out harbor.pem -outform PE
     ```
 
     #### 2. 官方的方式<br/>
