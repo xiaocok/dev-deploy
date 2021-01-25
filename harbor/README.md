@@ -15,6 +15,11 @@ github地址：https://github.com/goharbor/harbor<br/>
     openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout harbor.key -out harbor.crt -subj "/CN=hub.com"
     cp ./{harbor.key, harbor.crt} /data/cert
     ```
+    
+    crt转换为pem(有些需要pem证书)
+    ```shell
+    openssl x509 -in .crt -out ca.pem -outform PE
+    ```
 
     #### 2. 官方的方式<br/>
     官方文档：https://goharbor.io/docs/2.1.0/install-config/configure-https/<br/>
