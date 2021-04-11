@@ -149,6 +149,11 @@
         rpm -qa | grep php
         ```
     * 根据名称，查看安装路径
+        
+        whereis php<br/>
+        或者<br/>
+        rpm -ql php-fpm-7.4.16-1.el7.remi.x86_64
+    
         ```
         # rpm -ql php-fpm-7.4.16-1.el7.remi.x86_64
         /etc/logrotate.d/php-fpm
@@ -271,6 +276,7 @@
             systemctl restart php-fpm
 
     * nginx配置调整
+    
         vim /etc/nginx/nginx.conf
         
         ```
@@ -293,6 +299,32 @@
         }
         ```
         
+        参考配置
+        ```
+        server {
+            listen 80;
+            server_name localhost.test;
+            # 设置代码根目录，后续则无需再设置根目录
+            root /code;
+            # 设置入口文件，或许无需再设置
+            index index.php index.html;
+        
+            # 路由重定向：优先按文件夹路径匹配，其次才是index.php的入口设置
+            # 适用于入口文件在文件夹下，而不是root根目录的框架。例如：Yii，Laravel等
+            location / {
+                try_files $uri $uri/ /index.php$is_args$args;
+            }
+        
+            location ~ \.php {
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_index index.php;
+                # 根据上面设置的root的根目录来确定$document_root
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+            }
+        }
+        ```
+        
         重启nginx
         
             systemctl reload nginx
@@ -303,6 +335,7 @@
 * [CENTOS 7 YUM 安装PHP7.4](https://blog.csdn.net/qq_35845964/article/details/110246464)
 * [CentOS 7 yum 安装 PHP7.3 教程](https://blog.csdn.net/laohe08/article/details/93166590)
 * [使用epel和remi第三方yum源，安装指定常用版本php](https://blog.csdn.net/lituxiu/article/details/90057277)
+* [CentOS7 安装 php7.4](https://www.jianshu.com/p/c22d70c47a8c)
 
 #### 报错参考
 * [安装epel-release后报错，解决办法](http://blog.sina.com.cn/s/blog_e9dca8f00102y5zg.html)
@@ -312,3 +345,5 @@
 #### 知识点参考
 * [php.ini中的cgi.fix_pathinfo选项](https://taobig.org/?p=650)
 * [nginx下支持PATH_INFO详解](https://www.nginx.cn/426.html)
+* [nginx中的try_files指令解释](https://www.nginx.cn/279.html)
+* [nginx 中 index try_files location 这三个配置项的作用](https://www.kancloud.cn/coding_up/php-linux/2158294)
