@@ -1,7 +1,14 @@
 # docker-compose
 docker-compose 部署的环境
 
-#### 相关服务<br/>
+#### 相关服务
+* [PHP安装](PHP)
+    * yum安装
+        * [yum安装-remi源-推荐方式（支持最新版本）](PHP/yum安装/yum安装-remi源.md)
+        * [yum安装-remi源-指定版本（支持最新版本）](PHP/yum安装/yum安装-remi源-指定版本.md)
+        * [yum安装-webtatic源（最高支持PHP7.2）](PHP/yum安装/yum安装-webtatic源.md)
+    * [源码安装](PHP/源码安装.md)
+* [nginx安装](nginx/yum安装.md)
 * [docker-ce安装](docker-ce)
 * [harbor部署](harbor)
 * [prometheus部署](prometheus)
