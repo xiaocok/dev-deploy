@@ -138,5 +138,6 @@
 #### 参考
 * [Composer 国内加速](https://www.imooc.com/article/details/id/293297)
 * [Composer 设置国内镜像加速命令](https://blog.csdn.net/qq_39479575/article/details/78515219)
+* [Laravel 安装和开发环境：Composer 国内加速镜像](https://learnku.com/laravel/wikis/25522)
 * [php项目构建速度优化 composer加速](https://blog.csdn.net/t_1007/article/details/86702737)
 * [compoesr install报错](https://www.cnblogs.com/trblog/p/13260089.html)
