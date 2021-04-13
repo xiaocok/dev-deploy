@@ -130,4 +130,4 @@
     ```
 
 #### 参考
-
+* [Nginx 入门教程](https://www.imooc.com/wiki/nginxlesson/Introduction.html)
