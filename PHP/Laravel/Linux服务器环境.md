@@ -3,12 +3,12 @@
 1. 安装composer
 
 2. 安装 Laravel
-    * 通过 Laravel 安装器
+    * 方式一： Laravel 安装器
         ```
         composer global require laravel/installer
         laravel new blog
         ```
-    * 通过 Composer 创建项目
+    * 方式二：通过 Composer 创建项目（推荐方式）
         ```
         composer create-project --prefer-dist laravel/laravel blog
         ```
