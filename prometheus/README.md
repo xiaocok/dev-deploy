@@ -1,5 +1,9 @@
 # Prometheus
 
+## 下载配置
+    全部配置存放于宿主机的指定位置。位置可以随机存放，建议指定位置。
+
+## 调整相关配置参数
 ### 配置AlertManager
 * 编辑配置文件<br/>
     vim alertmanager/alertmanager.yml
@@ -27,6 +31,7 @@
       - url: http://dingtalk:8060/dingtalk/webhook/send
         send_resolved: true
     ```
+    配置实际的邮件发送地址。
 
 ### dingtalk配置
 * 编辑配置文件
@@ -39,6 +44,7 @@
         # 签名，钉钉的机器人处获取
         secret: 
     ```
+    ★★配置钉钉的推送access_token和secret信息。
 
 ### grafana配置
 * 设置默认登录账号
@@ -55,6 +61,7 @@
             - "GF_SECURITY_ADMIN_USER=admin"
             - "GF_SECURITY_ADMIN_PASSWORD=admin"
     ```
+    设置管理的登录用户名、密码。
     
 ### prometheus配置
 * 采集规则
@@ -77,7 +84,7 @@
       - job_name: 'prometheus'
         static_configs:
         - targets: ['localhost:9090']
-      # 节点采集
+      # ★★节点采集★★
       - job_name: 'node-cluster'
         static_configs:
           - targets:
@@ -93,7 +100,30 @@
           - targets:
             - 'redis_exporter:9121'
     ```
+    ★★节点采集job_name: 'node-cluster'，需要配置节点的实际宿主机的IP。
+    
 * 告警规则<br/>
     根据实际告警要求调整<br/>
     vim prometheus/conf/rules/rule.yaml
     
+## 运行
+### 给prometheus的目录响应的写权限
+    chmod +666 prometheus/data
+    
+### 运行
+    docker-compose up -d
+    
+### 页面访问Grafana
+    http://宿主机IP:3000
+    
+### 登录账号
+    用户名：admin
+    密码：admin
+    
+### 添加prometheus数据库
+    地址：http://宿主机IP:9090
+
+### 添加Grafana模板
+    Node模板：8919
+    Redis模板：763
+    MySQL模板：7362,12826
