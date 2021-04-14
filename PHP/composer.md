@@ -1,5 +1,5 @@
 
-# composer安装
+# PHP Composer
 
 官方网址：https://getcomposer.org/
 
@@ -134,10 +134,93 @@
     
     5. 其他请参见下面参考
 
+## Compose 使用
+### 仓库地址
+    https://packagist.org/
+    https://packagist.org/explore/
+    https://packagist.org/packages/
+
+### 安装代码依赖
+#### 命令方式(require)
+**默认安装**
+
+    composer require monolog/monolog
+    
+**安装指定版本**
+
+    仓库地址查看版本
+    https://packagist.org/packages/monolog/monolog
+    
+    使用指定版本
+    composer require monolog/monolog 2.2.0
+
+#### composer.json文件方式
+    {
+        "require": {
+            "monolog/monolog": "2.1.*"
+        }
+    }
+    
+    执行命令
+    composer install
+
+### 更新 update 命令
+update 命令用于更新项目里所有的包，或者指定的某些包：
+
+    # 更新所有依赖
+    $ composer update
+
+    # 更新指定的包
+    $ composer update monolog/monolog
+
+    # 更新指定的多个包
+    $ composer update monolog/monolog symfony/dependency-injection
+
+    # 还可以通过通配符匹配包
+    $ composer update monolog/monolog symfony/*
+
+
+### 删除 remove 命令
+remove 命令用于移除一个包及其依赖（在依赖没有被其他包使用的情况下），如果依赖被其他包使用，则无法移除：
+
+    $ composer remove monolog/monolog
+    Loading composer repositories with package information
+    Updating dependencies (including require-dev)
+    Package operations: 0 installs, 0 updates, 2 removals
+      - Removing psr/log (1.0.2)
+      - Removing monolog/monolog (1.23.0)
+    Generating autoload files
+
+### 查找 search 命令
+search 命令可以搜索包：
+
+    $ composer search monolog
+    该命令会输出包及其描述信息，如果只想输出包名可以使用 --only-name 参数：
+
+    $ composer search --only-name monolog
+
+### show 命令
+show 命令可以列出当前项目使用到包的信息：
+
+    # 列出所有已经安装的包
+    $ composer show
+
+    # 可以通过通配符进行筛选
+    $ composer show monolog/*
+
+    # 显示具体某个包的信息
+    $ composer show monolog/monolog
+
 
 #### 参考
-* [Composer 国内加速](https://www.imooc.com/article/details/id/293297)
-* [Composer 设置国内镜像加速命令](https://blog.csdn.net/qq_39479575/article/details/78515219)
-* [Laravel 安装和开发环境：Composer 国内加速镜像](https://learnku.com/laravel/wikis/25522)
-* [php项目构建速度优化 composer加速](https://blog.csdn.net/t_1007/article/details/86702737)
-* [compoesr install报错](https://www.cnblogs.com/trblog/p/13260089.html)
+* 使用
+    * [Composer 安装与使用](https://www.runoob.com/w3cnote/composer-install-and-usage.html)
+    * [composer require如何指定版本](https://www.php.cn/tool/composer/458388.html)
+    * [如何使用composer安装指定版本的tp5.1](http://www.thinkphp.cn/topic/55899.html)
+* 加速
+    * [Composer 国内加速](https://www.imooc.com/article/details/id/293297)
+    * [Composer 设置国内镜像加速命令](https://blog.csdn.net/qq_39479575/article/details/78515219)
+    * [Laravel 安装和开发环境：Composer 国内加速镜像](https://learnku.com/laravel/wikis/25522)
+    * [php项目构建速度优化 composer加速](https://blog.csdn.net/t_1007/article/details/86702737)
+* 错误
+    * [compoesr install报错](https://www.cnblogs.com/trblog/p/13260089.html)
