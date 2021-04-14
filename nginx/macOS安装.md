@@ -94,4 +94,5 @@
   }
   ```
   
-  
+#### 参考
+* [MacOS 安装 nginx]https://www.cnblogs.com/iosdev/p/3345390.html
