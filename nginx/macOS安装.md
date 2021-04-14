@@ -2,13 +2,11 @@
 # macOS安装nginx
 
 ### 安装
-  
-  brew install nginx
+    brew install nginx
   
 ### 开机启动
-  
-  $ sudo cp `brew --prefix nginx`/homebrew.mxcl.nginx.plist /Library/LaunchDaemons/
-  $ sudo sed -i -e 's/`whoami`/root/g' `brew --prefix nginx`/homebrew.mxcl.nginx.plist
+    $ sudo cp `brew --prefix nginx`/homebrew.mxcl.nginx.plist /Library/LaunchDaemons/
+    $ sudo sed -i -e 's/`whoami`/root/g' `brew --prefix nginx`/homebrew.mxcl.nginx.plist
 
 ### 相关路径
   | 说明  | 路径 |
