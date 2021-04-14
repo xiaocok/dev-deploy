@@ -129,7 +129,3 @@
     }
     ```
 
-#### 参考
-* [Nginx 入门教程](https://www.imooc.com/wiki/nginxlesson/Introduction.html)
-* [nginx中文手册](https://www.nginx.cn/nginx-how-to)
-* [Nginx中文站-Nginx中文文档](https://www.nginx.cn/doc/index.html)
