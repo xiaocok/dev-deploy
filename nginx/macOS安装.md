@@ -31,17 +31,9 @@
     error_log = /var/log/nginx/error.log
 
 ### 命令行
-  停止
-    
-    nginx -s stop
-
-  启动
-    
-    nginx
-
-  重新加载
-  
-    ngin -s reload
+    启动      nginx
+    停止      nginx -s stop
+    重新加载   ngin -s reload
 
 ### nginx配置模板
   ```
