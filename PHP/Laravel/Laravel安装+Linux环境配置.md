@@ -20,7 +20,7 @@
 
         例如：7.x的最新版
         ```
-        composer create-project laravel/laravel blog "7.*.*"
+        composer create-project laravel/laravel blog --prefer-dist "7.*.*"
         ```
 
 3. web服务器配置
