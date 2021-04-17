@@ -5,13 +5,15 @@
 ---
 ##### PHP
 * PHP Composer
-    * [Composer安装+加速](PHP/Composer/composer安装.md)
+    * [Linux安装composer](PHP/Composer/Linux安装composer.md)
+    * [Windows安装composer](PHP/Composer/windows安装composer.md)
+    * [Composer加速](PHP/Composer/composer加速.md)
     * [Composer使用教程](PHP/Composer/使用教程.md)
     
 * Laravel
-    * [Linux服务器环境安装](PHP/Laravel/Linux服务器环境.md)
+    * [Laravel安装+Linux环境配置](PHP/Laravel/Laravel安装+Linux环境配置.md)
     * [Homestead环境安装](PHP/Laravel/Homestead环境.md)
-    * [PHPStorm的laravel框架插件配置](PHP/Laravel/PHPStrom配置.md)
+    * [PHPStorm的laravel框架代码追踪提示](PHP/Laravel/PHPStrom配置.md)
 
 * PHP安装
     * yum安装PHP
@@ -34,7 +36,7 @@
 * [harbor部署](harbor)
 ---
 
-##### Dcoker-Compose
+##### Docker-Compose
 * [prometheus部署](prometheus)
     * 支持服务器采集监控
     * 支持MySQL数据库采集监控
