@@ -8,16 +8,16 @@ guihub地址：https://github.com/barryvdh/laravel-ide-helper
 
 2. 安装ide-helper插件
     1. 安装
-       
+        ```
         composer require barryvdh/laravel-ide-helper
         如果安装失败的话先执行下 composer update 命令即可。
-
+        ```
     2. 分别执行下面三个命令
-        
+        ```
         php artisan ide-helper:eloquent
         php artisan ide-helper:generate
         php artisan ide-helper:meta
-       
+        ```
 3. 代码有提示并且可以反向追踪，也可以直接跳转到使用app方法加载类的方法。
 
 
