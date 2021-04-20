@@ -2,7 +2,7 @@
 
 ---
 
-### 服务器直接部署
+## 服务器环境部署
 
 ##### PHP
 * PHP Composer
@@ -31,13 +31,13 @@
 * [Nginx教程](server/nginx/教程.md)
 ---
 
-### Docker部署
+## Docker部署
 #### docker+仓库 部署
 * [docker-ce安装](docker/docker-ce)
 * [harbor部署](docker/harbor)
 ---
 
-### Docker-Compose部署
+## Docker-Compose部署
 
 * [prometheus部署](docker-compose/prometheus)
     * 支持服务器采集监控
@@ -48,4 +48,4 @@
     * 支持钉钉推送
 ---
 
-### Kubernetes
+## Kubernetes
