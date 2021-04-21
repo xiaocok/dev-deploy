@@ -101,13 +101,8 @@
     
 7. 设置开机启动、运行服务
     ```
-    #默认安装执行方式
     systemctl enable php-fpm    #开机启动php-fpm服务
     systemctl start php-fpm     #启动php-fpm服务
-    
-    #指定版本安装执行方式
-    systemctl enable php-fpm
-    systemctl start php-fpm
     ```
     查看9000端口是否正常启动
     ```

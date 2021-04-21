@@ -1,15 +1,12 @@
 
 # 安装nginx
-1. 查看可安装的版本
-
+### 1. 查看可安装的版本
     yum list | grep nginx
     
-2. 安装nginx
-    
+### 2. 安装nginx
     yum install nginx
     
-3. 查看nginx的路径
-    ```
+### 3. 查看nginx的路径
     # rpm -ql nginx
     /etc/logrotate.d/nginx
     /etc/nginx/fastcgi.conf
@@ -57,10 +54,9 @@
     /var/lib/nginx
     /var/lib/nginx/tmp
     /var/log/nginx
-    ```
     
-    整理的常用路径
-    ```
+**整理的常用路径**
+
     # 配置路径
     /etc/nginx/
     
@@ -78,10 +74,9 @@
     
     # 日志路径
     /var/log/nginx
-    ```
 
-4. 新增nginx的服务器配置
-    ```
+
+### 4. 新增nginx的服务器配置
     server {
         listen       80;
         server_name  localhost;
@@ -127,5 +122,13 @@
         #    deny  all;
         #}
     }
-    ```
 
+### 5. 启动nginx
+**启动nginx**
+
+    systemctl start nginx
+
+**开机启动nginx**
+
+    systemctl enable nginx
+ 
