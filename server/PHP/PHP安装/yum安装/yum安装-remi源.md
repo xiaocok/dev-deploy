@@ -86,14 +86,19 @@
         #直接安装，即为7.4版本
         yum install php php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json php-redis
         ```
+        
+        全部安装
+        ```
+        php-bcmath php-curl php-ctype php-dom php-gd php-iconv php-json php-mbstring php-mysqlnd php-openssl php-pdo php-pdo_mysql php-pdo_sqlite php-phar php-posix php-redis php-sockets php-sodium php-sysvshm php-sysvmsg php-sysvsem php-zip php-zlib php-xml php-xmlreader php-pcntl php-opcache
+        ```
       
     * 查看可安装的PHP扩展
         ```
         #查看可安装的PHP看全部扩展
-        yum search php74
+        yum search php
         
         #查看PHP的MySQL扩展
-        yum search php74 | grep mysql
+        yum search php | grep mysql
         
         #查看已安装的MySQL扩展
         rpm -qa | grep php | grep mysql

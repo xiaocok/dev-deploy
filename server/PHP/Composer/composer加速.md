@@ -3,14 +3,15 @@
 # Composer 加速
 
 ### 1、配置全局加速
+#### 阿里云加速
+    $ composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+
 #### 国内通用加速
     $ composer config -g repo.packagist composer https://packagist.phpcomposer.com
 
 #### laravel加速
     $ composer config -g repo.packagist composer https://packagist.laravel-china.org
 
-#### 阿里云加速
-    $ composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
 
 ### 2、配置当前项目加速
 #### 例如：阿里云
@@ -86,6 +87,7 @@ crm地址：
 #### 参考
 * [Composer 国内加速](https://www.imooc.com/article/details/id/293297)
 * [Composer 国内加速，修改镜像源](https://learnku.com/articles/15977/composer-accelerate-and-modify-mirror-source-in-china)
+* [Composer 国内加速：可用镜像列表](https://learnku.com/php/wikis/30594)
 * [Composer 设置国内镜像加速命令](https://blog.csdn.net/qq_39479575/article/details/78515219)
 * [Laravel 安装和开发环境：Composer 国内加速镜像](https://learnku.com/laravel/wikis/25522)
 * [php项目构建速度优化 composer加速](https://blog.csdn.net/t_1007/article/details/86702737)
