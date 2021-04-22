@@ -10,6 +10,15 @@
 ---
 
 ##### PHP
+* PHP安装
+  * yum安装PHP
+    * [yum安装-remi源-推荐方式（支持最新版本）](server/PHP/PHP安装/yum安装/yum安装-remi源.md)
+    * [yum安装-remi源-指定版本（支持最新版本）](server/PHP/PHP安装/yum安装/yum安装-remi源-指定版本.md)
+    * [yum安装-webtatic源（最高支持PHP7.2）](server/PHP/PHP安装/yum安装/yum安装-webtatic源.md)
+  * [macOS系统原生自带PHP配置](server/PHP/PHP安装/macOS安装.md)
+  * [源码安装PHP](server/PHP/PHP安装/源码安装.md)
+  * [PHP扩展安装](server/PHP/PHP安装/PHP扩展安装.md)
+
 * PHP Composer
     * [Linux安装composer](server/PHP/Composer/Linux安装composer.md)
     * [Windows安装composer](server/PHP/Composer/windows安装composer.md)
@@ -23,14 +32,10 @@
     * [Laravel安装+Linux环境配置](server/PHP/Laravel/Laravel安装+Linux环境配置.md)
     * [PHPStorm的laravel框架代码追踪提示](server/PHP/Laravel/PHPStrom配置.md)
 
-* PHP安装
-    * yum安装PHP
-        * [yum安装-remi源-推荐方式（支持最新版本）](server/PHP/PHP安装/yum安装/yum安装-remi源.md)
-        * [yum安装-remi源-指定版本（支持最新版本）](server/PHP/PHP安装/yum安装/yum安装-remi源-指定版本.md)
-        * [yum安装-webtatic源（最高支持PHP7.2）](server/PHP/PHP安装/yum安装/yum安装-webtatic源.md)
-    * [macOS系统原生自带PHP配置](server/PHP/PHP安装/macOS安装.md)
-    * [源码安装PHP](server/PHP/PHP安装/源码安装.md)
-* [PHP扩展安装](server/PHP/PHP安装/PHP扩展安装.md)
+* PHP Swoole
+    * [Swoole安装](server/PHP/Swoole/安装.md)
+* PHP Hyperf
+    * Hyperf安装
 
 ##### Nginx
 * Nginx安装
