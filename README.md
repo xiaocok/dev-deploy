@@ -12,31 +12,31 @@
 ##### PHP
 * PHP安装
   * yum安装PHP
-    * [yum安装-remi源-推荐方式（支持最新版本）](server/PHP/PHP安装/yum安装/yum安装-remi源.md)
-    * [yum安装-remi源-指定版本（支持最新版本）](server/PHP/PHP安装/yum安装/yum安装-remi源-指定版本.md)
-    * [yum安装-webtatic源（最高支持PHP7.2）](server/PHP/PHP安装/yum安装/yum安装-webtatic源.md)
-  * [macOS系统原生自带PHP配置](server/PHP/PHP安装/macOS安装.md)
-  * [源码安装PHP](server/PHP/PHP安装/源码安装.md)
-  * [PHP扩展安装](server/PHP/PHP安装/PHP扩展安装.md)
+    * [yum安装-remi源-推荐方式（支持最新版本）](server/PHP/yum安装/yum安装-remi源.md)
+    * [yum安装-remi源-指定版本（支持最新版本）](server/PHP/yum安装/yum安装-remi源-指定版本.md)
+    * [yum安装-webtatic源（最高支持PHP7.2）](server/PHP/yum安装/yum安装-webtatic源.md)
+  * [macOS系统原生自带PHP配置](server/PHP/macOS安装.md)
+  * [源码安装PHP](server/PHP/源码安装.md)
+  * [PHP扩展安装](server/PHP/PHP扩展安装.md)
 
 * PHP Composer
-    * [Linux安装composer](server/PHP/Composer/Linux安装composer.md)
-    * [Windows安装composer](server/PHP/Composer/windows安装composer.md)
-    * [Composer加速](server/PHP/Composer/composer加速.md)
-    * [Composer使用教程](server/PHP/Composer/使用教程.md)
+    * [Linux安装composer](server/Composer/Linux安装composer.md)
+    * [Windows安装composer](server/Composer/windows安装composer.md)
+    * [Composer加速](server/Composer/composer加速.md)
+    * [Composer使用教程](server/Composer/使用教程.md)
     
 * Laravel
     * Homestead环境安装
-        * [Homestead环境部署](server/PHP/Laravel/Homestead/Homestead环境.md)
-        * [安装PHP扩展](server/PHP/Laravel/Homestead/安装PHP扩展.md)
-    * [Laravel安装+Linux环境配置](server/PHP/Laravel/Laravel安装+Linux环境配置.md)
-    * [PHPStorm的laravel框架代码追踪提示](server/PHP/Laravel/PHPStrom配置.md)
+        * [Homestead环境部署](server/Laravel/Homestead/Homestead环境.md)
+        * [安装PHP扩展](server/Laravel/Homestead/安装PHP扩展.md)
+    * [Laravel安装+Linux环境配置](server/Laravel/Laravel安装+Linux环境配置.md)
+    * [PHPStorm的laravel框架代码追踪提示](server/Laravel/PHPStrom配置.md)
 
 * PHP Swoole
-    * [Swoole安装](server/PHP/Swoole/安装.md)
+    * [Swoole安装](server/Swoole/安装.md)
 
 * PHP Hyperf
-    * Hyperf安装
+    * [安装](server/Hyperf/安装.md)
 
 ##### Nginx
 * Nginx安装
