@@ -1,5 +1,4 @@
 docker run -d \
-  --restart=always \
   --name elasticsearch \
   -v `pwd`/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml \
   -p 9200:9200 \
@@ -7,6 +6,7 @@ docker run -d \
   -e "discovery.type=single-node" \
   docker.elastic.co/elasticsearch/elasticsearch:7.12.1
 
+# --restart=always \
 
 # 插入数据
 #curl -v -H 'Content-Type:application/json' -X POST -d '{"body": "there"}' 192.168.33.50:9200/index/_doc/1
