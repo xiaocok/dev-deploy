@@ -43,7 +43,7 @@
         yum install https://rpms.remirepo.net/enterprise/remi-release-7.rpm
         ```
     
-    * 卸载rpm源
+    * 卸载rpm源(后续不需要时，需要卸载的时候操作)
     
         查询已安装的包
         ```
@@ -89,7 +89,7 @@
         
         全部安装
         ```
-        php-bcmath php-curl php-ctype php-dom php-gd php-iconv php-json php-mbstring php-mysqlnd php-openssl php-pdo php-pdo_mysql php-pdo_sqlite php-phar php-posix php-redis php-sockets php-sodium php-sysvshm php-sysvmsg php-sysvsem php-zip php-zlib php-xml php-xmlreader php-pcntl php-opcache
+        yum install php php-bcmath php-curl php-cli php-ctype php-dom php-fpm php-gd php-iconv php-json php-mbstring php-mysqlnd php-openssl php-pdo php-pdo_sqlite php-phar php-posix php-redis php-sockets php-sodium php-sysvshm php-sysvmsg php-sysvsem php-zip php-zlib php-xml php-xmlreader php-pcntl php-opcache
         ```
       
     * 查看可安装的PHP扩展
@@ -103,7 +103,19 @@
         #查看已安装的MySQL扩展
         rpm -qa | grep php | grep mysql
         ```
-    
+      
+    * 报错
+      
+        Loaded plugins: fastestmirror, product-id, search-disabled-repos, subscription-manager
+
+        This system is not registered with an entitlement server. You can use subscription-manager to register.
+
+        解决：
+        
+        [Linux(Redhat 7.0) yum无法使用和subscription-manager提示](https://www.jianshu.com/p/7f22bb72a681)
+      
+        [Linux(Redhat 7.0) yum无法使用和subscription-manager提示](http://qiheo.com/zhishi/255.html)
+
 7. 设置开机启动、运行服务
     ```
     systemctl enable php-fpm    #开机启动php-fpm服务
@@ -271,9 +283,19 @@
         group = nginx
         ```
         
+        # 监听端口，如果nginx是执行的docker，则这里可以改为0.0.0.0::9000
+        listen = 127.0.0.1:9000
+
         重启php-fpm
             
             systemctl restart php-fpm
+
+        报错：[启动php-fpm时报错： Starting php-fpm ERROR: [pool www] cannot get uid for user 'nginx'](https://www.edoou.com/articles/1557801897790792)
+      
+        意思是没有nginx用户，添加就好了
+
+            # useradd nginx
+        这种情况为docker执行nginx才会出现，安装nginx的时候，会自动创建nginx用户。
 
     * nginx配置调整
     
@@ -341,6 +363,8 @@
 * [安装epel-release后报错，解决办法](http://blog.sina.com.cn/s/blog_e9dca8f00102y5zg.html)
 * [Linux(Redhat 7.0) yum无法使用和subscription-manager提示](https://www.jianshu.com/p/7f22bb72a681)
 * [安装错误提示：This system is not registered with an entitlement server. You can use subscription-manager to register.](https://blog.csdn.net/oraoharu/article/details/106808108)
+* [启动php-fpm时报错： Starting php-fpm ERROR: [pool www] cannot get uid for user 'nginx'](https://www.edoou.com/articles/1557801897790792)
+* [Linux(Redhat 7.0) yum无法使用和subscription-manager提示](http://qiheo.com/zhishi/255.html)
 
 #### 知识点参考
 * [php.ini中的cgi.fix_pathinfo选项](https://taobig.org/?p=650)

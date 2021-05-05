@@ -25,6 +25,9 @@
     php composer-setup.php --filename=composer
     
     # 指定执行程序文件名、安装路径
+    php composer-setup.php --install-dir=/usr/local/bin/ --filename=composer
+  
+    示例：
     php composer-setup.php --install-dir=bin --filename=composer
     ```
 

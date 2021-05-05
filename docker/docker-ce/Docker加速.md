@@ -17,6 +17,10 @@
     http://hub-mirror.c.163.com
 
 
+* 百度云加速器
+  
+    https://mirror.baidubce.com
+
 * DaoCloud加速
 
     加速器页面：
@@ -41,6 +45,14 @@
     vim /etc/docker/daemon.json
     {
         "registry-mirrors": [
+            "https://hub-mirror.c.163.com",
+            "https://mirror.baidubce.com"
+        ]
+    }
+
+    vim /etc/docker/daemon.json
+    {
+        "registry-mirrors": [
             "https://docker.mirrors.ustc.edu.cn",
             "https://registry.docker-cn.com",
             "http://hub-mirror.c.163.com",
@@ -51,4 +63,18 @@
 
 重启docker
 
+    systemctl daemon-reload
     systemctl restart docker
+
+检查加速器是否生效
+
+    执行 $ docker info，如果从结果中看到了如下内容，说明配置成功。
+
+    Registry Mirrors:
+      https://hub-mirror.c.163.com/
+      https://mirror.baidubce.com/
+
+
+
+### 参考
+* [镜像加速器](https://yeasy.gitbook.io/docker_practice/install/mirror)

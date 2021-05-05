@@ -3,6 +3,28 @@
 官方文档：https://docs.docker.com/install/linux/docker-ce/centos/
 
 ---
+## 准备
+安装防火墙(开发环境可以不用安装)
+1. 安装systemctl：
+```shell
+yum install iptables-services
+```
+注意不是yum install iptables
+
+2. 设置开机启动：
+```shell
+systemctl enable iptables.service
+```
+
+3. 常用命令
+```shell
+systemctl stop iptables
+systemctl start iptables
+systemctl restart iptables
+systemctl reload iptables
+```
+
+
 ## 一、yum安装
 ### 1、卸载旧版本
 ```shell script
@@ -81,3 +103,7 @@ $ sudo systemctl enable docker
 ## 二、rpm包安装<br/>
 官网rpm包下载地址:
 https://download.docker.com/linux/centos/7/x86_64/stable/Packages/
+
+
+## 参考
+* [重启防火墙（iptables)命令#service iptable restart失效](https://www.cnblogs.com/manmanchanglu/p/12167510.html)
