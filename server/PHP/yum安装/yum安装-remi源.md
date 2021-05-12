@@ -89,7 +89,7 @@
         
         全部安装
         ```
-        yum install php php-bcmath php-curl php-cli php-ctype php-dom php-fpm php-gd php-iconv php-json php-mbstring php-mysqlnd php-openssl php-pdo php-pdo_sqlite php-phar php-posix php-redis php-sockets php-sodium php-sysvshm php-sysvmsg php-sysvsem php-zip php-zlib php-xml php-xmlreader php-pcntl php-opcache
+        yum install php php-bcmath php-curl php-cli php-ctype php-devel php-dom php-fpm php-gd php-iconv php-json php-mbstring php-mysqlnd php-mcrypt php-openssl php-pdo php-pdo_sqlite php-pear php-phar php-posix php-redis php-sockets php-sodium php-sysvshm php-sysvmsg php-sysvsem php-zip php-zlib php-xml php-xmlreader php-pcntl php-opcache
         ```
       
     * 查看可安装的PHP扩展

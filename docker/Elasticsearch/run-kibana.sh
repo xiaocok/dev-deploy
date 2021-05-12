@@ -3,6 +3,7 @@ docker run -d \
   -p 5601:5601 \
   --link elasticsearch:elasticsearch \
   -e "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" \
+  -v `pwd`/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml \
   docker.elastic.co/kibana/kibana:7.12.1
 
 # --restart=always \
