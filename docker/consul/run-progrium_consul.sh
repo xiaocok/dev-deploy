@@ -1,3 +1,4 @@
+#/bin/bash
 
 docker run -d \
 	-p 53:53 \
