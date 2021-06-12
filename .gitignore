@@ -8,3 +8,8 @@
 .vscode/
 .vs/
 .eslintcache
+
+#etcd
+.docker/etcd/etcd-google-cluster/etcd-s1
+.docker/etcd/etcd-google-cluster/etcd-s2
+.docker/etcd/etcd-google-cluster/etcd-s3
