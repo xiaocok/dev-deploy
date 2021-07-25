@@ -75,9 +75,17 @@
   kubeadm config images pull --image-repository registry.aliyuncs.com/google_containers --kubernetes-version v1.21.3
   ```
 
-  注意：v1.21.3版本的的阿里云镜像coredns:v1.8.0没有，从coredns/coredns:1.8.0下载后，修改为阿里云镜像处理。
+  注意：v1.21.3版本的的阿里云镜像registry.aliyuncs.com/google_containers/coredns:`v1.8.0`没有，
+
+  从registry.aliyuncs.com/google_containers/coredns:`1.8.0`拉取后，
+
+  修改tag为阿里云镜像registry.aliyuncs.com/google_containers/coredns:`v1.8.0`之后kubeadm init部署集群。
+
+  [阿里云coredns:v1.8.0镜像不存在](https://blog.csdn.net/a749227859/article/details/118732605)
 
 - 执行部署命令
+
+  `1.19.13`版本
 
   ```shell
   kubeadm init \
@@ -93,7 +101,26 @@
 
   如果执行失败，则日志级别设置为6（--v=6），可以看详细日志。
 
-  如果是1.21.3版本，则将版本设置为--kubernetes-version v1.21.3即可。
+  如果是`1.21.3`版本，则将版本设置为--kubernetes-version v1.21.3即可。
+
+  ```shell
+  # 拉取coredns镜像
+  docker pull registry.aliyuncs.com/google_containers/coredns:1.8.0
+  
+  # 修改tag
+  docker tag registry.aliyuncs.com/google_containers/coredns:1.8.0 registry.aliyuncs.com/google_containers/coredns:v1.8.0
+  
+  # 安装集群
+  kubeadm init \
+      --apiserver-advertise-address=192.168.33.200 \
+      --control-plane-endpoint=192.168.33.200:6443 \
+      --image-repository registry.aliyuncs.com/google_containers \
+      --kubernetes-version v1.21.3 \
+      --service-cidr=10.1.0.0/16 \
+      --pod-network-cidr=10.244.0.0/16 \
+      --ignore-preflight-errors=all \
+      --v=6
+  ```
 
   
 
@@ -225,13 +252,101 @@
           source /etc/profile
   ```
 
+- 安装网络插件
+
+  否则kube-controller-manager、kube-scheduler一直重启，集群Node状态一直为NotReady。
+
+  ```shell
+  #默认的flannel的镜像地址为
+  quay.io/coreos/flannel:v0.14.0
   
+  #加速
+  #官方docker pull拉取太慢，使用导入方式
+  #releases地址：
+  https://github.com/flannel-io/flannel/releases
+  #dockers镜像下载：
+  https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-amd64.docker
+  #导入镜像
+  dockers load -i flanneld-v0.14.0-amd64.docker
+  
+  #修改tag
+  docker tag quay.io/coreos/flannel:v0.14.0-amd64 quay.io/coreos/flannel:v0.14.0
+  
+  #安装网络插件flannel
+  kubectl apply -f kube-flannel.yml
+
+- 检测集群状态
+
+  ```shell
+  #查看集群节点
+  $ kubectl get nodes
+  NAME         STATUS   ROLES                  AGE   VERSION
+  k8s-master   Ready    control-plane,master   44m   v1.21.3
+  
+  #节点详情，节点异常查看
+  kubectl describe nodes			
+  
+  #查看k8s的系统级别的pod，用于排查问题
+  $ kubectl get pods -n kube-system
+  NAME                                 READY   STATUS    RESTARTS   AGE
+  coredns-59d64cd4d4-bmfsp             1/1     Running   0          62m
+  coredns-59d64cd4d4-llbwq             1/1     Running   0          62m
+  etcd-k8s-master                      1/1     Running   1          64m
+  kube-apiserver-k8s-master            1/1     Running   1          63m
+  kube-controller-manager-k8s-master   1/1     Running   13         63m
+  kube-flannel-ds-9cmss                1/1     Running   2          51m
+  kube-proxy-bdl7b                     1/1     Running   1          62m
+  kube-scheduler-k8s-master            1/1     Running   9          64m
+  ```
 
 - 重置kubeadm
 
   ```shelll
   kubeadm reset
   ```
+
+- 常见问题
+
+  ```shell
+  1. 集群系统Pod的coredns一直没有ready
+  # kubectl get pod -n kube-system
+  NAME                                   READY
+  coredns-5c98db65d4-f9rb7               0/1
+  
+  2. kube-controller-manager、kube-scheduler一直重启
+  # docker ps -a
+  CONTAINER ID   STATUS                        PORTS     NAMES
+  d7aa2a2c520f   Exited (255) 14 minutes ago             k8s_kube-scheduler
+  7b495118975a   Exited (255) 14 minutes ago             k8s_kube-controller-manager
+  
+  3. container runtime network not ready: NetworkReady=false
+  # kubectl describe nodes
+  Conditions:
+    Type             Reason                       Message
+    ----             ------                       -------
+    Ready            KubeletNotReady              container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+  
+  出现这个错误提示信息已经很明显,网络插件没有准备好。
+  我们可以执行命令docker images|grep flannel来查看flannel镜像是否已经成功拉取下来。
+  经过排查,flannel镜像拉取的有点慢,稍等一会以后就ok了。
+  
+  或者
+  从官方的镜像中导入
+  releases地址：
+  	https://github.com/flannel-io/flannel/releases
+  dockers镜像下载：
+  	https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-amd64.docker
+  导入镜像：
+  	dockers load -i flanneld-v0.14.0-amd64.docker
+  修改tag:
+  	docker tag quay.io/coreos/flannel:v0.14.0-amd64 quay.io/coreos/flannel:v0.14.0
+  ```
+
+  参考：
+
+  ​	[kubernetes安装过程中遇到问题及解决](https://www.cnblogs.com/tylerzhou/p/10974940.html)
+
+  ​	[quay.io国内无法访问，解决Kubernetes应用flannel失败，报错Init:ImagePullBackOff](https://blog.csdn.net/qq_43442524/article/details/105298366)
 
 
 
