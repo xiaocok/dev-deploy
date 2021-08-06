@@ -74,14 +74,6 @@ https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/create-
 
 
 
-### 为 Kubernetes 运行 etcd 集群
-
-**kubeadm方式部署，会自动使用Pod的方式部署ETCD，因此这里可以不再额外的部署ETCD。**
-
-[为 Kubernetes 运行 etcd 集群](etcd-install.md)
-
-
-
 ### 安装环境准备
 
 [环境准备](kubeadm-prepare.md)
@@ -152,6 +144,16 @@ https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/create-
 
 - 可视化管理
   - Dashboard
+
+
+
+### 为 Kubernetes 运行 etcd 集群
+
+**kubeadm方式部署，会自动使用Pod的方式部署ETCD，因此这里可以不再额外的部署ETCD。**
+
+如果为了持久化/灾备，则可以考虑使用下面的方式在宿主机上安装ETCD。
+
+[为 Kubernetes 运行 etcd 集群](etcd-install.md)
 
 
 

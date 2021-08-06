@@ -61,19 +61,39 @@ https://github.com/flannel-io/flannel/blob/master/Documentation/kube-flannel.yml
 
 [kube-flannel.yml](kube-flannel.yml)
 
+**下载镜像**
+
+由于执行yaml时的quay.io/coreos/flannel:v0.14.0镜像无法下载，因此从github网站上下载之后，导入本地。
+
+```shell
+https://github.com/flannel-io/flannel/releases
+
+https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-amd64.docker
+https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-arm.docker
+https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-arm64.docker
+https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-ppc64le.docker
+https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-s390x.docker
+```
+
+**导入镜像**
+
+```shell
+docker load < flanneld-v0.14.0-amd64.docker
+```
+
 **此处1.19版本即可执行**
 
 ```shell
 kubectl apply -f kube-flannel.yml
 ```
 
-此处1.21版本即可执行
+**此处1.21版本即可执行**
 
 ```shell
 kubectl apply -f kube-flannel.yml
 ```
 
-
+> 由于集群先安装时，并有网络插件CNI，因此集群的节点为NotReady，安装好CNI插件后，还需要等一段时间，节点才会Ready。
 
 
 
@@ -187,6 +207,8 @@ https://github.com/cloudnativelabs/kube-router/blob/master/docs/kubeadm.md
 ## 服务发现
 
 - [CoreDNS](https://coredns.io/) 是一种灵活的，可扩展的 DNS 服务器，可以 [安装](https://github.com/coredns/deployment/tree/master/kubernetes)为集群内的 Pod 提供 DNS 服务。
+
+>  注意：默认是安装了CoreDNS，如果没有必要，可以不替换CoreDNS。此步操作可以忽略。
 
 
 

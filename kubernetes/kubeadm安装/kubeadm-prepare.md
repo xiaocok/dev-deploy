@@ -103,9 +103,9 @@ https://v1-19.docs.kubernetes.io/zh/docs/tasks/tools/install-kubectl/
 
   - 第二是因为k8s定义的资源模型中，CPU和内存都是确定的可用资源，在调度的时候都会考虑在内。比如，设置了内存设置了limit 2G，就代表最大可用内存是2G，而引入swap（cgroup支持swap限制）后这个模型就变得复杂了，而且需要结合Qos，swap的使用完全是由操作系统根据水位自行调节的，并不直接受kubelet管理。
 
-- 设置iptables不对bridge的数据进行处理
+- `net.bridge.bridge-nf-call-iptables`设置成1
 
-  一些 RHEL/CentOS 7 的用户曾经遇到过问题：由于 iptables 被绕过而导致流量无法正确路由的问题。您应该确保 在 `sysctl` 配置中的 `net.bridge.bridge-nf-call-iptables` 被设置为 1。
+  将桥接的IPv4流量传递到iptables的链，参考：[kubeadm部署k8s集群](https://www.kancloud.cn/tuna_dai_/docker/1199625)
 
   ```bash
   cat <<EOF >  /etc/sysctl.d/k8s.conf
@@ -174,7 +174,7 @@ https://v1-19.docs.kubernetes.io/zh/docs/tasks/tools/install-kubectl/
 
 ## 安装 runtime
 
-**如果已安装了docker，则这里无需操作**
+**K8s如果同时检测到 docker 和 containerd，则优先选择 docker。因此这里已安装了docker，所以这里无需再安装containerd**
 
 
 
@@ -188,7 +188,7 @@ https://v1-19.docs.kubernetes.io/zh/docs/tasks/tools/install-kubectl/
 | containerd | /run/containerd/containerd.sock |
 | CRI-O      | /var/run/crio/crio.sock         |
 
-如果同时检测到 docker 和 containerd，则优先选择 docker。 这是必然的，因为 docker 18.09 附带了 containerd 并且两者都是可以检测到的。 如果检测到其他两个或多个运行时，kubeadm 将以一个合理的错误信息退出。
+**如果同时检测到 docker 和 containerd，则优先选择 docker。** 这是必然的，因为 docker 18.09 附带了 containerd 并且两者都是可以检测到的。 如果检测到其他两个或多个运行时，kubeadm 将以一个合理的错误信息退出。
 
 在非 Linux 节点上，默认使用 docker 作为容器 runtime。
 

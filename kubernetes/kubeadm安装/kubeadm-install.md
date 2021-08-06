@@ -117,6 +117,8 @@ https://www.jianshu.com/p/75091ad364c1
 
   ```shell
   docker pull registry.aliyuncs.com/google_containers/kube-apiserver:v1.19.13
+  
+  docker pull registry.aliyuncs.com/google_containers/kube-apiserver:v1.21.3
   ```
 
   安装
@@ -212,7 +214,7 @@ https://www.jianshu.com/p/75091ad364c1
 
 
 
-### 在控制平面节点上配置 kubelet 使用+的 cgroup 驱动程序
+### 在控制平面节点上配置 kubelet 使用+的 cgroup 驱动程序，具体操作请见下方的`配置Cgroup 驱动为systemd模式`
 
 使用 docker 时，kubeadm 会自动为其检测 cgroup 驱动并在运行时对 `/var/lib/kubelet/kubeadm-flags.env` 文件进行配置。
 

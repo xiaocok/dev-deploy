@@ -1,5 +1,12 @@
 ## 部署Kubernetes集群
 
+```shell
+# kubeadm init命令行
+https://v1-19.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/
+```
+
+
+
 ### 初始化控制平面节点
 
 控制平面节点是运行控制平面组件的机器， 包括 [etcd](https://v1-19.docs.kubernetes.io/zh/docs/tasks/administer-cluster/configure-upgrade-etcd/) （集群数据库） 和 [API Server](https://v1-19.docs.kubernetes.io/zh/docs/reference/command-line-tools-reference/kube-apiserver/) （命令行工具 [kubectl](https://v1-19.docs.kubernetes.io/docs/user-guide/kubectl-overview/) 与之通信）。
@@ -16,6 +23,26 @@
 
 - 关于镜像拉取
 
+  **查看所需镜像列表**
+
+  ```shell
+  # 使用配置文件方式
+  # kubeadm config images list --config kubeadm.yml
+  
+  # 使用参数方式
+  # kubeadm config images list --kubernetes-version v1.21.3
+  
+  k8s.gcr.io/kube-apiserver:v1.21.3
+  k8s.gcr.io/kube-controller-manager:v1.21.3
+  k8s.gcr.io/kube-scheduler:v1.21.3
+  k8s.gcr.io/kube-proxy:v1.21.3
+  k8s.gcr.io/pause:3.4.1
+  k8s.gcr.io/etcd:3.4.13-0
+  k8s.gcr.io/coredns/coredns:v1.8.0
+  ```
+
+  **1.19.13**
+
   ```shell
   # 官方镜像
   k8s.gcr.io/kube-apiserver:v1.19.13
@@ -24,7 +51,7 @@
   k8s.gcr.io/kube-proxy:v1.19.13
   k8s.gcr.io/pause:3.2
   k8s.gcr.io/etcd:3.4.13-0
-  k8s.gcr.io/coredns/coredns:v1.7.0 
+  k8s.gcr.io/coredns:1.7.0
   
   # https://hub.docker.com副本
   mirrorgooglecontainers/kube-apiserver:v1.19.13
@@ -42,7 +69,42 @@
   registry.aliyuncs.com/google_containers/kube-proxy:v1.19.13
   registry.aliyuncs.com/google_containers/pause:3.2 
   registry.aliyuncs.com/google_containers/etcd:3.4.13-0
-  registry.aliyuncs.com/google_containers/coredns:v1.7.0
+  registry.aliyuncs.com/google_containers/coredns:1.7.0
+  ```
+
+  **1.21.3**
+
+  ```shell
+  # 官方镜像
+  k8s.gcr.io/kube-apiserver:v1.21.3
+  k8s.gcr.io/kube-controller-manager:v1.21.3
+  k8s.gcr.io/kube-scheduler:v1.21.3
+  k8s.gcr.io/kube-proxy:v1.21.3
+  k8s.gcr.io/pause:3.4.1
+  k8s.gcr.io/etcd:3.4.13-0
+  k8s.gcr.io/coredns/coredns:v1.8.0
+  
+  # https://hub.docker.com副本
+  mirrorgooglecontainers/kube-apiserver:v1.21.1
+  mirrorgooglecontainers/kube-controller-manager:v1.21.1
+  mirrorgooglecontainers/kube-scheduler:v1.21.1
+  mirrorgooglecontainers/kube-proxy:v1.21.1
+  mirrorgooglecontainers/pause:3.4.1
+  mirrorgooglecontainers/etcd:3.4.13-0
+  coredns/coredns:1.8.0
+  
+  # 阿里云副本
+  registry.aliyuncs.com/google_containers/kube-apiserver:v1.21.1
+  registry.aliyuncs.com/google_containers/kube-controller-manager:v1.21.1
+  registry.aliyuncs.com/google_containers/kube-scheduler:v1.21.1
+  registry.aliyuncs.com/google_containers/kube-proxy:v1.21.1
+  registry.aliyuncs.com/google_containers/pause:3.4.1
+  registry.aliyuncs.com/google_containers/etcd:3.4.13-0
+  registry.aliyuncs.com/google_containers/coredns:1.8.0
+  # 注意：coredns需要拉取coredns:1.8.0，然后修改tag为coredns:v1.8.0
+  # 原因：
+  # 从1.19和1.21版本来看。老版本使用的是coredns:1.7.0，新版本使用的是v1.8.0。新版本增加了一个v标识。
+  # 阿里云的镜像仓库按老版本并没有对coredns增加一个v标识。因此安装时，安装kubeadm直接替换仓库的方式会拉取coredns:v1.8.0镜像。则会提示无法下载coredns:v1.8.0镜像。所以需要对阿里云的coredns:1.8.0镜像，修改tag为coredns:v1.8.0才能安装。
   ```
 
   - 官方镜像，可能无法拉取
@@ -112,8 +174,8 @@
   
   # 安装集群
   kubeadm init \
-      --apiserver-advertise-address=192.168.33.200 \
-      --control-plane-endpoint=192.168.33.200:6443 \
+      --apiserver-advertise-address=192.168.33.100 \
+      --control-plane-endpoint=192.168.33.100:6443 \
       --image-repository registry.aliyuncs.com/google_containers \
       --kubernetes-version v1.21.3 \
       --service-cidr=10.1.0.0/16 \
@@ -124,36 +186,40 @@
 
   
 
-  1. --apiserver-advertise-address  
+  1. **--apiserver-advertise-address**
 
      指明master的那个interface与cluster与其他节点通信（如果mstaer有多个interface建议明确指定，如果不指定，kubeadm会自动选择有默认网关的interface）
 
-     如果不指定，则会自动检测网络接口，通常是内网IP。
+     API 服务器所公布的其正在监听的 IP 地址。如果不指定，则会自动检测网络接口，通常是内网IP。
 
-  2. --pod-network-cidr
+  2. **--control-plane-endpoint**
+
+     Api-Server的地址，为控制平面指定一个稳定的 IP 地址或 DNS 名称。
+
+  3. **--pod-network-cidr**
 
      指定 Pod 网络的范围。Kubernetes 支持多种网络方案，而且不同网络方案对 --pod-network-cidr 有自己的要求。
-     
+
      此处使用的是flanel网络，所以必须这个CIDR设置为10.244.0.0/16。
-     
+
      比如我在本文中使用的是Calico网络，需要指定为192.168.0.0/16。
-     
-  3. --service-cidr
+
+  4. **--service-cidr**
 
      用于指定SVC（kubernets的service）的网络范围
 
-  4. --image-repository
+  5. **--image-repository**
 
      Kubenetes默认Registries地址是 k8s.gcr.io，在国内并不能访问 gcr.io，在1.13版本中我们可以增加–image-repository参数，默认值是 k8s.gcr.io，将其指定为阿里云镜像地址：registry.aliyuncs.com/google_containers。
 
-  5. --kubernetes-version
+  6. **--kubernetes-version**
      关闭版本探测，因为它的默认值是stable-1，会导致从https://dl.k8s.io/release/stable-1.txt下载最新的版本号，我们可以将其指定为固定版本来跳过网络请求。
 
-  6. --ignore-preflight-errors=all
+  7. **--ignore-preflight-errors=all**
 
      忽略错误
 
-  7. --v
+  8. **--v**
 
      日志级别，--v=5默认级别, --v=6调试日志。如果异常时，可以设置为调试日志，方便查看问题。
 
