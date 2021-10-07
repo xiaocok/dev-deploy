@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  restartPolicy: Always #重启策略
+  containers:
+  - name: nginx
+    image: nginx:1.16

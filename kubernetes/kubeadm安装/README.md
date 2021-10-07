@@ -74,6 +74,14 @@ https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/create-
 
 
 
+### 安装Containerd
+
+> k8s v1.20版本将不在支持docker，需要使用containerd。之前的版本可以安装docker。
+
+[安装containerd](containerd-install.md)
+
+
+
 ### 安装环境准备
 
 [环境准备](kubeadm-prepare.md)
@@ -167,9 +175,25 @@ https://v1-19.docs.kubernetes.io/zh/docs/setup/production-environment/tools/kube
 
 
 
+**总之**
+
+> 学习测试环境用`kind`或`minikube`
+>
+> 生产环境用`kubeadm`
+
+
+
 ## 参考
 
-[kubernetes部署](https://www.cnblogs.com/jayce9102/p/10592913.html)
+- [kubernetes部署](https://www.cnblogs.com/jayce9102/p/10592913.html)
 
-[血泪史： k8s Initial timeout of 40s passed.](https://blog.csdn.net/weixin_40161254/article/details/112232302)
+- [血泪史： k8s Initial timeout of 40s passed.](https://blog.csdn.net/weixin_40161254/article/details/112232302)
+- [Kubernetes/K8S快速入门](https://www.psvmc.cn/article/2021-02-25-kubernetes-start-1.html)
+
+- [Kubernetes/K8S快速入门之Kind](https://www.psvmc.cn/article/2021-02-27-kubernetes-start-3-kind.html)
+- [Kubernetes/K8S快速入门之minikube](https://www.psvmc.cn/article/2021-02-26-kubernetes-start-2-minikube.html)
+
+- [Kubernetes/K8S部署之kubeadm](https://www.psvmc.cn/article/2021-02-28-kubernetes-start-4-kubeadm.html)
+
+- [使用kind来快速部署k8s环境](https://zhuanlan.zhihu.com/p/61492135)
 

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-qos-burstable
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.16
+    resources: # 指定内存资源，但不指定CPU资源，且所需资源及资源限制不同
+      requests: 
+        memory: "64Mi"

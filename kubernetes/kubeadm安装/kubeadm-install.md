@@ -21,8 +21,12 @@ https://v1-19.docs.kubernetes.io/zh/docs/reference/command-line-tools-reference/
 https://v1-19.docs.kubernetes.io/zh/docs/tasks/tools/install-kubectl/
 
 # kubectl命令行文档地址
+# kubectl概述
+https://v1-19.docs.kubernetes.io/zh/docs/reference/kubectl/overview/
+# kubectl命令行
 https://v1-19.docs.kubernetes.io/zh/docs/reference/kubectl/kubectl/
-
+# kubectl命令行详解
+https://v1-19.docs.kubernetes.io/docs/reference/generated/kubectl/kubectl-commands
 
 # 安装指定版本的kubeadm、kubelet 和 kubectl
 https://www.jianshu.com/p/75091ad364c1

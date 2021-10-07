@@ -1,5 +1,7 @@
 ## 部署Kubernetes集群
 
+[TOC]
+
 ```shell
 # kubeadm init命令行
 https://v1-19.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/
@@ -21,111 +23,111 @@ https://v1-19.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-i
 
 ### 部署集群
 
-- 关于镜像拉取
+#### 关于镜像拉取
 
-  **查看所需镜像列表**
+**查看所需镜像列表**
+
+```shell
+# 使用配置文件方式
+# kubeadm config images list --config kubeadm.yml
+
+# 使用参数方式
+# kubeadm config images list --kubernetes-version v1.21.3
+
+k8s.gcr.io/kube-apiserver:v1.21.3
+k8s.gcr.io/kube-controller-manager:v1.21.3
+k8s.gcr.io/kube-scheduler:v1.21.3
+k8s.gcr.io/kube-proxy:v1.21.3
+k8s.gcr.io/pause:3.4.1
+k8s.gcr.io/etcd:3.4.13-0
+k8s.gcr.io/coredns/coredns:v1.8.0
+```
+
+**1.19.13**
+
+```shell
+# 官方镜像
+k8s.gcr.io/kube-apiserver:v1.19.13
+k8s.gcr.io/kube-controller-manager:v1.19.13
+k8s.gcr.io/kube-scheduler:v1.19.13
+k8s.gcr.io/kube-proxy:v1.19.13
+k8s.gcr.io/pause:3.2
+k8s.gcr.io/etcd:3.4.13-0
+k8s.gcr.io/coredns:1.7.0
+
+# https://hub.docker.com副本
+mirrorgooglecontainers/kube-apiserver:v1.19.13
+mirrorgooglecontainers/kube-controller-manager:v1.19.13
+mirrorgooglecontainers/kube-scheduler:v1.19.13
+mirrorgooglecontainers/kube-proxy:v1.19.13
+mirrorgooglecontainers/pause:3.2
+mirrorgooglecontainers/etcd:3.4.13-0
+coredns/coredns:1.7.0
+
+# 阿里云副本
+registry.aliyuncs.com/google_containers/kube-apiserver:v1.19.13
+registry.aliyuncs.com/google_containers/kube-controller-manager:v1.19.13
+registry.aliyuncs.com/google_containers/kube-scheduler:v1.19.13
+registry.aliyuncs.com/google_containers/kube-proxy:v1.19.13
+registry.aliyuncs.com/google_containers/pause:3.2 
+registry.aliyuncs.com/google_containers/etcd:3.4.13-0
+registry.aliyuncs.com/google_containers/coredns:1.7.0
+```
+
+**1.21.3**
+
+```shell
+# 官方镜像
+k8s.gcr.io/kube-apiserver:v1.21.3
+k8s.gcr.io/kube-controller-manager:v1.21.3
+k8s.gcr.io/kube-scheduler:v1.21.3
+k8s.gcr.io/kube-proxy:v1.21.3
+k8s.gcr.io/pause:3.4.1
+k8s.gcr.io/etcd:3.4.13-0
+k8s.gcr.io/coredns/coredns:v1.8.0
+
+# https://hub.docker.com副本
+mirrorgooglecontainers/kube-apiserver:v1.21.1
+mirrorgooglecontainers/kube-controller-manager:v1.21.1
+mirrorgooglecontainers/kube-scheduler:v1.21.1
+mirrorgooglecontainers/kube-proxy:v1.21.1
+mirrorgooglecontainers/pause:3.4.1
+mirrorgooglecontainers/etcd:3.4.13-0
+coredns/coredns:1.8.0
+
+# 阿里云副本
+registry.aliyuncs.com/google_containers/kube-apiserver:v1.21.1
+registry.aliyuncs.com/google_containers/kube-controller-manager:v1.21.1
+registry.aliyuncs.com/google_containers/kube-scheduler:v1.21.1
+registry.aliyuncs.com/google_containers/kube-proxy:v1.21.1
+registry.aliyuncs.com/google_containers/pause:3.4.1
+registry.aliyuncs.com/google_containers/etcd:3.4.13-0
+registry.aliyuncs.com/google_containers/coredns:1.8.0
+# 注意：coredns需要拉取coredns:1.8.0，然后修改tag为coredns:v1.8.0
+# 原因：
+# 从1.19和1.21版本来看。老版本使用的是coredns:1.7.0，新版本使用的是v1.8.0。新版本增加了一个v标识。
+# 阿里云的镜像仓库按老版本并没有对coredns增加一个v标识。因此安装时，安装kubeadm直接替换仓库的方式会拉取coredns:v1.8.0镜像。则会提示无法下载coredns:v1.8.0镜像。所以需要对阿里云的coredns:1.8.0镜像，修改tag为coredns:v1.8.0才能安装。
+```
+
+- 官方镜像，可能无法拉取
+
+- hub.docker.com镜像
+
+  需要手动拉取之后，在修改tag为官方镜像，再部署
+
+  注意：coredns的镜像地址(coredns/coredns) 与 其他几个镜像的地址(mirrorgooglecontainers)不同
+
+- 验证阿里云的镜像加速
 
   ```shell
-  # 使用配置文件方式
-  # kubeadm config images list --config kubeadm.yml
-  
-  # 使用参数方式
-  # kubeadm config images list --kubernetes-version v1.21.3
-  
-  k8s.gcr.io/kube-apiserver:v1.21.3
-  k8s.gcr.io/kube-controller-manager:v1.21.3
-  k8s.gcr.io/kube-scheduler:v1.21.3
-  k8s.gcr.io/kube-proxy:v1.21.3
-  k8s.gcr.io/pause:3.4.1
-  k8s.gcr.io/etcd:3.4.13-0
-  k8s.gcr.io/coredns/coredns:v1.8.0
+  docker pull registry.aliyuncs.com/google_containers/kube-apiserver:v1.19.13
   ```
 
-  **1.19.13**
+  如果加速中没有该镜像，则无法部署此版本的kubernetes
 
-  ```shell
-  # 官方镜像
-  k8s.gcr.io/kube-apiserver:v1.19.13
-  k8s.gcr.io/kube-controller-manager:v1.19.13
-  k8s.gcr.io/kube-scheduler:v1.19.13
-  k8s.gcr.io/kube-proxy:v1.19.13
-  k8s.gcr.io/pause:3.2
-  k8s.gcr.io/etcd:3.4.13-0
-  k8s.gcr.io/coredns:1.7.0
-  
-  # https://hub.docker.com副本
-  mirrorgooglecontainers/kube-apiserver:v1.19.13
-  mirrorgooglecontainers/kube-controller-manager:v1.19.13
-  mirrorgooglecontainers/kube-scheduler:v1.19.13
-  mirrorgooglecontainers/kube-proxy:v1.19.13
-  mirrorgooglecontainers/pause:3.2
-  mirrorgooglecontainers/etcd:3.4.13-0
-  coredns/coredns:1.7.0
-  
-  # 阿里云副本
-  registry.aliyuncs.com/google_containers/kube-apiserver:v1.19.13
-  registry.aliyuncs.com/google_containers/kube-controller-manager:v1.19.13
-  registry.aliyuncs.com/google_containers/kube-scheduler:v1.19.13
-  registry.aliyuncs.com/google_containers/kube-proxy:v1.19.13
-  registry.aliyuncs.com/google_containers/pause:3.2 
-  registry.aliyuncs.com/google_containers/etcd:3.4.13-0
-  registry.aliyuncs.com/google_containers/coredns:1.7.0
-  ```
+  如果个别镜像不存在的话，例如：coredns，可以通过hub.docker.com拉取下来，再修改tag为阿里云的镜像
 
-  **1.21.3**
 
-  ```shell
-  # 官方镜像
-  k8s.gcr.io/kube-apiserver:v1.21.3
-  k8s.gcr.io/kube-controller-manager:v1.21.3
-  k8s.gcr.io/kube-scheduler:v1.21.3
-  k8s.gcr.io/kube-proxy:v1.21.3
-  k8s.gcr.io/pause:3.4.1
-  k8s.gcr.io/etcd:3.4.13-0
-  k8s.gcr.io/coredns/coredns:v1.8.0
-  
-  # https://hub.docker.com副本
-  mirrorgooglecontainers/kube-apiserver:v1.21.1
-  mirrorgooglecontainers/kube-controller-manager:v1.21.1
-  mirrorgooglecontainers/kube-scheduler:v1.21.1
-  mirrorgooglecontainers/kube-proxy:v1.21.1
-  mirrorgooglecontainers/pause:3.4.1
-  mirrorgooglecontainers/etcd:3.4.13-0
-  coredns/coredns:1.8.0
-  
-  # 阿里云副本
-  registry.aliyuncs.com/google_containers/kube-apiserver:v1.21.1
-  registry.aliyuncs.com/google_containers/kube-controller-manager:v1.21.1
-  registry.aliyuncs.com/google_containers/kube-scheduler:v1.21.1
-  registry.aliyuncs.com/google_containers/kube-proxy:v1.21.1
-  registry.aliyuncs.com/google_containers/pause:3.4.1
-  registry.aliyuncs.com/google_containers/etcd:3.4.13-0
-  registry.aliyuncs.com/google_containers/coredns:1.8.0
-  # 注意：coredns需要拉取coredns:1.8.0，然后修改tag为coredns:v1.8.0
-  # 原因：
-  # 从1.19和1.21版本来看。老版本使用的是coredns:1.7.0，新版本使用的是v1.8.0。新版本增加了一个v标识。
-  # 阿里云的镜像仓库按老版本并没有对coredns增加一个v标识。因此安装时，安装kubeadm直接替换仓库的方式会拉取coredns:v1.8.0镜像。则会提示无法下载coredns:v1.8.0镜像。所以需要对阿里云的coredns:1.8.0镜像，修改tag为coredns:v1.8.0才能安装。
-  ```
-
-  - 官方镜像，可能无法拉取
-
-  - hub.docker.com镜像
-
-    需要手动拉取之后，在修改tag为官方镜像，再部署
-
-    注意：coredns的镜像地址(coredns/coredns) 与 其他几个镜像的地址(mirrorgooglecontainers)不同
-
-  - 验证阿里云的镜像加速
-
-    ```shell
-    docker pull registry.aliyuncs.com/google_containers/kube-apiserver:v1.19.13
-    ```
-
-    如果加速中没有该镜像，则无法部署此版本的kubernetes
-
-    如果个别镜像不存在的话，例如：coredns，可以通过hub.docker.com拉取下来，再修改tag为阿里云的镜像
-
-  
 
 - 部署前，拉取镜像
 
@@ -145,85 +147,85 @@ https://v1-19.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-i
 
   [阿里云coredns:v1.8.0镜像不存在](https://blog.csdn.net/a749227859/article/details/118732605)
 
-- 执行部署命令
+####　执行部署命令
 
-  `1.19.13`版本
+`1.19.13`版本
 
-  ```shell
-  kubeadm init \
-      --apiserver-advertise-address=192.168.33.100 \
-      --control-plane-endpoint=192.168.33.100:6443 \
-      --image-repository registry.aliyuncs.com/google_containers \
-      --kubernetes-version v1.19.13 \
-      --service-cidr=10.1.0.0/16 \
-      --pod-network-cidr=10.244.0.0/16 \
-      --ignore-preflight-errors=all \
-      --v=5
-  ```
+```shell
+kubeadm init \
+    --apiserver-advertise-address=192.168.33.100 \
+    --control-plane-endpoint=192.168.33.100:6443 \
+    --image-repository registry.aliyuncs.com/google_containers \
+    --kubernetes-version v1.19.13 \
+    --service-cidr=10.1.0.0/16 \
+    --pod-network-cidr=10.244.0.0/16 \
+    --ignore-preflight-errors=all \
+    --v=5
+```
 
-  如果执行失败，则日志级别设置为6（--v=6），可以看详细日志。
+如果执行失败，则日志级别设置为6（--v=6），可以看详细日志。
 
-  如果是`1.21.3`版本，则将版本设置为--kubernetes-version v1.21.3即可。
+如果是`1.21.3`版本，则将版本设置为--kubernetes-version v1.21.3即可。
 
-  ```shell
-  # 拉取coredns镜像
-  docker pull registry.aliyuncs.com/google_containers/coredns:1.8.0
-  
-  # 修改tag
-  docker tag registry.aliyuncs.com/google_containers/coredns:1.8.0 registry.aliyuncs.com/google_containers/coredns:v1.8.0
-  
-  # 安装集群
-  kubeadm init \
-      --apiserver-advertise-address=192.168.33.100 \
-      --control-plane-endpoint=192.168.33.100:6443 \
-      --image-repository registry.aliyuncs.com/google_containers \
-      --kubernetes-version v1.21.3 \
-      --service-cidr=10.1.0.0/16 \
-      --pod-network-cidr=10.244.0.0/16 \
-      --ignore-preflight-errors=all \
-      --v=6
-  ```
+```shell
+# 拉取coredns镜像
+docker pull registry.aliyuncs.com/google_containers/coredns:1.8.0
 
-  
+# 修改tag
+docker tag registry.aliyuncs.com/google_containers/coredns:1.8.0 registry.aliyuncs.com/google_containers/coredns:v1.8.0
 
-  1. **--apiserver-advertise-address**
+# 安装集群
+kubeadm init \
+    --apiserver-advertise-address=192.168.33.100 \
+    --control-plane-endpoint=192.168.33.100:6443 \
+    --image-repository registry.aliyuncs.com/google_containers \
+    --kubernetes-version v1.21.3 \
+    --service-cidr=10.1.0.0/16 \
+    --pod-network-cidr=10.244.0.0/16 \
+    --ignore-preflight-errors=all \
+    --v=6
+```
 
-     指明master的那个interface与cluster与其他节点通信（如果mstaer有多个interface建议明确指定，如果不指定，kubeadm会自动选择有默认网关的interface）
 
-     API 服务器所公布的其正在监听的 IP 地址。如果不指定，则会自动检测网络接口，通常是内网IP。
 
-  2. **--control-plane-endpoint**
+1. **--apiserver-advertise-address**
 
-     Api-Server的地址，为控制平面指定一个稳定的 IP 地址或 DNS 名称。
+   指明master的那个interface与cluster与其他节点通信（如果mstaer有多个interface建议明确指定，如果不指定，kubeadm会自动选择有默认网关的interface）
 
-  3. **--pod-network-cidr**
+   API 服务器所公布的其正在监听的 IP 地址。如果不指定，则会自动检测网络接口，通常是内网IP。
 
-     指定 Pod 网络的范围。Kubernetes 支持多种网络方案，而且不同网络方案对 --pod-network-cidr 有自己的要求。
+2. **--control-plane-endpoint**
 
-     此处使用的是flanel网络，所以必须这个CIDR设置为10.244.0.0/16。
+   Api-Server的地址，为控制平面指定一个稳定的 IP 地址或 DNS 名称。
 
-     比如我在本文中使用的是Calico网络，需要指定为192.168.0.0/16。
+3. **--pod-network-cidr**
 
-  4. **--service-cidr**
+   指定 Pod 网络的范围。Kubernetes 支持多种网络方案，而且不同网络方案对 --pod-network-cidr 有自己的要求。
 
-     用于指定SVC（kubernets的service）的网络范围
+   此处使用的是flanel网络，所以必须这个CIDR设置为10.244.0.0/16。
 
-  5. **--image-repository**
+   比如我在本文中使用的是Calico网络，需要指定为192.168.0.0/16。
 
-     Kubenetes默认Registries地址是 k8s.gcr.io，在国内并不能访问 gcr.io，在1.13版本中我们可以增加–image-repository参数，默认值是 k8s.gcr.io，将其指定为阿里云镜像地址：registry.aliyuncs.com/google_containers。
+4. **--service-cidr**
 
-  6. **--kubernetes-version**
-     关闭版本探测，因为它的默认值是stable-1，会导致从https://dl.k8s.io/release/stable-1.txt下载最新的版本号，我们可以将其指定为固定版本来跳过网络请求。
+   用于指定SVC（kubernets的service）的网络范围
 
-  7. **--ignore-preflight-errors=all**
+5. **--image-repository**
 
-     忽略错误
+   Kubenetes默认Registries地址是 k8s.gcr.io，在国内并不能访问 gcr.io，在1.13版本中我们可以增加–image-repository参数，默认值是 k8s.gcr.io，将其指定为阿里云镜像地址：registry.aliyuncs.com/google_containers。
 
-  8. **--v**
+6. **--kubernetes-version**
+   关闭版本探测，因为它的默认值是stable-1，会导致从https://dl.k8s.io/release/stable-1.txt下载最新的版本号，我们可以将其指定为固定版本来跳过网络请求。
 
-     日志级别，--v=5默认级别, --v=6调试日志。如果异常时，可以设置为调试日志，方便查看问题。
+7. **--ignore-preflight-errors=all**
 
-     
+   忽略错误
+
+8. **--v**
+
+   日志级别，--v=5默认级别, --v=6调试日志。如果异常时，可以设置为调试日志，方便查看问题。
+
+   
 
 - 初始化过程
 
@@ -255,7 +257,7 @@ https://v1-19.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-i
   /etc/kubernetes/kubelet.conf
   ```
 
-  后续操作
+  **后续操作**
 
   ```shell
   # 要开始使用集群，要使非 root 用户可以运行 kubectl，请运行以下命令
@@ -287,132 +289,185 @@ https://v1-19.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-i
       sha256:cba621c95049b4fe5d4623c6e979e430bf569c22bfd3d079a98e8ea26483a685
   ```
 
-  问题
+  **调度**
 
   ```shell
-  报错：
-  	The connection to the server localhost:8080 was refused - did you specify the right host or port?
-  原因：
-  	kubernetes master没有与本机绑定，集群初始化的时候没有绑定，此时设置在本机的环境变量即可解决问题。
-  	一般是由于没有执行init之后的后续操作，或者普通用户和root用户切换了，导致异常。
-  解决：
-  	方式一：
-  		官方的方式
-  		#普通用户
-          mkdir -p $HOME/.kube
-          sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-          sudo chown $(id -u):$(id -g) $HOME/.kube/config
-          
-          #root用户
-          export KUBECONFIG=/etc/kubernetes/admin.conf
-  	方式二：
-          https://blog.csdn.net/CEVERY/article/details/108753379
+  # 允许master节点部署pod：所有master节点都允许被调度
+  kubectl taint nodes --all node-role.kubernetes.io/master-
   
-          #设置环境变量
-          编辑文件设置 vim /etc/profile 在底部增加新的环境变量 
-              export KUBECONFIG=/etc/kubernetes/admin.conf
-          或者
-              echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /etc/profile
+  # 将Master也当作Node使用：指定master节点允许被调度
+  kubectl taint node nodename node-role.kubernetes.io/master-
   
-          # 使生效
-          source /etc/profile
+  # 设置节点不允许被调度
+  kubectl taint nodes nodename node-role.kubernetes.io/master=:NoSchedule
+  
+  # 将Master恢复成Master Only状态：
+  kubectl taint node nodename node-role.kubernetes.io/master="":NoSchedule
   ```
 
-- 安装网络插件
-
-  否则kube-controller-manager、kube-scheduler一直重启，集群Node状态一直为NotReady。
-
+  taint污点说明
+  
   ```shell
-  #默认的flannel的镜像地址为
-  quay.io/coreos/flannel:v0.14.0
+  # 增加一个污点
+  kubectl taint nodes node1 key1=value1:NoSchedule
+  # 给节点 node1 增加一个污点，它的键名是 key1，键值是 value1，效果是 NoSchedule。
+  # 这表示只有拥有和这个污点相匹配的容忍度的 Pod 才能够被分配到 node1 这个节点。
   
-  #加速
-  #官方docker pull拉取太慢，使用导入方式
-  #releases地址：
-  https://github.com/flannel-io/flannel/releases
-  #dockers镜像下载：
-  https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-amd64.docker
-  #导入镜像
-  dockers load -i flanneld-v0.14.0-amd64.docker
-  
-  #修改tag
-  docker tag quay.io/coreos/flannel:v0.14.0-amd64 quay.io/coreos/flannel:v0.14.0
-  
-  #安装网络插件flannel
-  kubectl apply -f kube-flannel.yml
-
-- 检测集群状态
-
-  ```shell
-  #查看集群节点
-  $ kubectl get nodes
-  NAME         STATUS   ROLES                  AGE   VERSION
-  k8s-master   Ready    control-plane,master   44m   v1.21.3
-  
-  #节点详情，节点异常查看
-  kubectl describe nodes			
-  
-  #查看k8s的系统级别的pod，用于排查问题
-  $ kubectl get pods -n kube-system
-  NAME                                 READY   STATUS    RESTARTS   AGE
-  coredns-59d64cd4d4-bmfsp             1/1     Running   0          62m
-  coredns-59d64cd4d4-llbwq             1/1     Running   0          62m
-  etcd-k8s-master                      1/1     Running   1          64m
-  kube-apiserver-k8s-master            1/1     Running   1          63m
-  kube-controller-manager-k8s-master   1/1     Running   13         63m
-  kube-flannel-ds-9cmss                1/1     Running   2          51m
-  kube-proxy-bdl7b                     1/1     Running   1          62m
-  kube-scheduler-k8s-master            1/1     Running   9          64m
+  # 移除一个污点
+  kubectl taint nodes node1 key1=value1:NoSchedule-
   ```
-
-- 重置kubeadm
-
-  ```shelll
-  kubeadm reset
-  ```
-
-- 常见问题
-
-  ```shell
-  1. 集群系统Pod的coredns一直没有ready
-  # kubectl get pod -n kube-system
-  NAME                                   READY
-  coredns-5c98db65d4-f9rb7               0/1
   
-  2. kube-controller-manager、kube-scheduler一直重启
-  # docker ps -a
-  CONTAINER ID   STATUS                        PORTS     NAMES
-  d7aa2a2c520f   Exited (255) 14 minutes ago             k8s_kube-scheduler
-  7b495118975a   Exited (255) 14 minutes ago             k8s_kube-controller-manager
   
-  3. container runtime network not ready: NetworkReady=false
-  # kubectl describe nodes
-  Conditions:
-    Type             Reason                       Message
-    ----             ------                       -------
-    Ready            KubeletNotReady              container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
   
-  出现这个错误提示信息已经很明显,网络插件没有准备好。
-  我们可以执行命令docker images|grep flannel来查看flannel镜像是否已经成功拉取下来。
-  经过排查,flannel镜像拉取的有点慢,稍等一会以后就ok了。
   
-  或者
-  从官方的镜像中导入
-  releases地址：
-  	https://github.com/flannel-io/flannel/releases
-  dockers镜像下载：
-  	https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-amd64.docker
-  导入镜像：
-  	dockers load -i flanneld-v0.14.0-amd64.docker
-  修改tag:
-  	docker tag quay.io/coreos/flannel:v0.14.0-amd64 quay.io/coreos/flannel:v0.14.0
-  ```
 
-  参考：
+#### 问题
 
-  ​	[kubernetes安装过程中遇到问题及解决](https://www.cnblogs.com/tylerzhou/p/10974940.html)
+**执行kuebel命令，报错无法连接**
 
-  ​	[quay.io国内无法访问，解决Kubernetes应用flannel失败，报错Init:ImagePullBackOff](https://blog.csdn.net/qq_43442524/article/details/105298366)
+```shell
+报错：
+	The connection to the server localhost:8080 was refused - did you specify the right host or port?
+原因：
+	kubernetes master没有与本机绑定，集群初始化的时候没有绑定，此时设置在本机的环境变量即可解决问题。
+	一般是由于没有执行init之后的后续操作，或者普通用户和root用户切换了，导致异常。
+解决：
+	方式一：
+		官方的方式
+		#普通用户
+        mkdir -p $HOME/.kube
+        sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        sudo chown $(id -u):$(id -g) $HOME/.kube/config
+        
+        #root用户
+        export KUBECONFIG=/etc/kubernetes/admin.conf
+	方式二：
+        https://blog.csdn.net/CEVERY/article/details/108753379
+
+        #设置环境变量
+        编辑文件设置 vim /etc/profile 在底部增加新的环境变量 
+            export KUBECONFIG=/etc/kubernetes/admin.conf
+        或者
+            echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /etc/profile
+
+        # 使生效
+        source /etc/profile
+```
+
+**服务器重启，导致kuebeadm对应的服务停止了**
+
+解决：
+
+```shell
+# 启动已停止的k8s相关的容器
+docker start `docker ps -a |grep k8s_ | grep Exited|awk '{print $1}'`
+
+# 记得启动kubelet，否则k8s集群认为系统不可调度，而无法去掉node.kubernetes.io/unreachable:NoSchedule污点
+systemctl start kubelet.service
+```
+
+
+
+#### 安装网络插件
+
+否则kube-controller-manager、kube-scheduler一直重启，集群Node状态一直为NotReady。
+
+```shell
+#默认的flannel的镜像地址为
+quay.io/coreos/flannel:v0.14.0
+
+#加速
+#官方docker pull拉取太慢，使用导入方式
+#releases地址：
+https://github.com/flannel-io/flannel/releases
+#dockers镜像下载：
+https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-amd64.docker
+#导入镜像
+docker load -i flanneld-v0.14.0-amd64.docker
+
+#修改tag
+docker tag quay.io/coreos/flannel:v0.14.0-amd64 quay.io/coreos/flannel:v0.14.0
+
+#安装网络插件flannel
+kubectl apply -f kube-flannel.yml
+```
+
+检测集群状态
+
+```shell
+#查看集群节点
+$ kubectl get nodes
+NAME         STATUS   ROLES                  AGE   VERSION
+k8s-master   Ready    control-plane,master   44m   v1.21.3
+
+#节点详情，节点异常查看
+kubectl describe nodes
+
+#查看k8s的系统级别的pod，用于排查问题
+$ kubectl get pods -n kube-system
+NAME                                 READY   STATUS    RESTARTS   AGE
+coredns-59d64cd4d4-bmfsp             1/1     Running   0          62m
+coredns-59d64cd4d4-llbwq             1/1     Running   0          62m
+etcd-k8s-master                      1/1     Running   1          64m
+kube-apiserver-k8s-master            1/1     Running   1          63m
+kube-controller-manager-k8s-master   1/1     Running   13         63m
+kube-flannel-ds-9cmss                1/1     Running   2          51m
+kube-proxy-bdl7b                     1/1     Running   1          62m
+kube-scheduler-k8s-master            1/1     Running   9          64m
+```
+
+重置kubeadm
+
+```shelll
+kubeadm reset
+```
+
+常见问题
+
+```shell
+1. 集群系统Pod的coredns一直没有ready
+# kubectl get pod -n kube-system
+NAME                                   READY
+coredns-5c98db65d4-f9rb7               0/1
+
+2. kube-controller-manager、kube-scheduler一直重启
+# docker ps -a
+CONTAINER ID   STATUS                        PORTS     NAMES
+d7aa2a2c520f   Exited (255) 14 minutes ago             k8s_kube-scheduler
+7b495118975a   Exited (255) 14 minutes ago             k8s_kube-controller-manager
+
+3. container runtime network not ready: NetworkReady=false
+# kubectl describe nodes
+Conditions:
+  Type             Reason                       Message
+  ----             ------                       -------
+  Ready            KubeletNotReady              container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+
+出现这个错误提示信息已经很明显,网络插件没有准备好。
+我们可以执行命令docker images|grep flannel来查看flannel镜像是否已经成功拉取下来。
+经过排查,flannel镜像拉取的有点慢,稍等一会以后就ok了。
+
+或者
+从官方的镜像中导入
+releases地址：
+	https://github.com/flannel-io/flannel/releases
+dockers镜像下载：
+	https://github.com/flannel-io/flannel/releases/download/v0.14.0/flanneld-v0.14.0-amd64.docker
+导入镜像：
+	dockers load -i flanneld-v0.14.0-amd64.docker
+修改tag:
+	docker tag quay.io/coreos/flannel:v0.14.0-amd64 quay.io/coreos/flannel:v0.14.0
+```
+
+参考：
+
+- [kubernetes安装过程中遇到问题及解决](https://www.cnblogs.com/tylerzhou/p/10974940.html)
+
+- [quay.io国内无法访问，解决Kubernetes应用flannel失败，报错Init:ImagePullBackOff](https://blog.csdn.net/qq_43442524/article/details/105298366)
+
+- [污点和容忍度](https://kubernetes.io/zh/docs/concepts/scheduling-eviction/taint-and-toleration/)
+
+- [k8s Pod调度失败（NoExecute）排查及分析](https://blog.csdn.net/u012516914/article/details/110020568)
 
 
 
