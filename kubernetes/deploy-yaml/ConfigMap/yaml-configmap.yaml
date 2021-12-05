@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: List		# list可以指定多个对象，这里也可以直接指定ConfigMap,不用list
+metadata:
+items:			# 指定所有对象
+- apiVersion: v1
+  kind: ConfigMap	# 指定类型为ConfigMap
+  metadata:
+    name: yaml-configmap
+  data:
+    user: "root"
+    password: "123456"
+    multiline-config: |
+      [Grpc]
+      AppId="boss"
+      Address="10.1.1.248:10000"
+      
+      [LogService]
+      AppId="boss"
+      Address="10.1.1.248:10001"
