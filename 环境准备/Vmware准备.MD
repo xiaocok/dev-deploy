@@ -15,7 +15,7 @@
 
 1. 设置网络
 
-   虚拟机CentOS->设置->硬件->网络适配器
+   虚拟机CentOS->设置->硬件->网络适配器->添加->网络适配器
 
    |    设备     |       摘要       |          说明          |
    | :---------: | :--------------: | :--------------------: |
@@ -106,6 +106,12 @@
    ONBOOT=yes
    ```
 
+   > cd /etc/sysconfig/network-scripts/
+   >
+   > cp ifcfg-ens33 ifcfg-ens37
+   >
+   > 编辑ifcfg-ens37
+
 4. 重启虚拟机（reboot）验证IP是否固定不变。
 
 
@@ -191,11 +197,12 @@
 
 2. 在虚拟机中，打开终端窗口。
 
-3. 运行不带参数的 mount 命令，以确定 Linux 发行版是否已自动挂载 VMware Tools 虚拟 CD-ROM 映像。\
+3. 运行不带参数的 mount 命令，以确定 Linux 发行版是否已自动挂载 VMware Tools 虚拟 CD-ROM 映像。
 
    如果已挂载 CD-ROM 设备，则将采用类似于以下输出的形式列出 CD-ROM 设备及其挂载点：
 
    ```shell
+   # 挂载说明，不是命令
    /dev/cdrom on /mnt/cdrom type iso9660 (ro,nosuid,nodev)
    ```
 
@@ -210,12 +217,13 @@
 
    b. 挂载 CD-ROM 驱动器。
 
-   ```
+   ```shell
    mount /dev/cdrom /mnt/cdrom
+   # mount: /dev/sr0 is write-protected, mounting read-only
    ```
-
+   
    某些 Linux 发行版使用不同的设备名称或采取不同的方式组织 /dev 目录。如果 CD-ROM 驱动器不是 /dev/cdrom，或者如果 CD-ROM 的挂载点不是 /mnt/cdrom，请修改该命令以反映您的发行版所使用的约定。
-
+   
 5. 转到工作目录，例如 /tmp。
 
    `cd /tmp`
@@ -267,18 +275,41 @@
 
 1. 设置共享文件夹
 
-   虚拟机->设置->选项->共享文件夹
+   虚拟机->设置->选项->共享文件夹->总是启用->添加共享文件夹
+
+   > 主机路径：	D:\www
+   >
+   > 名称：			www
 
 2. 设置自定义挂载目录
 
-   安装VMware Tools后，共享文件夹默认放在`/mnt/hgfs/`目录下(/mnt/hgfs/xxx共享文件夹名称)，编辑`/etc/init.d/vmware-tools`
+   安装VMware Tools后，共享文件夹默认放在`/mnt/hgfs/`目录下(/mnt/hgfs/xxx共享文件夹名称)
 
+   ```shell
+   # ls /mnt/hgfs
+   www
+   ```
+
+   
+   
+   编辑`/etc/init.d/vmware-tools`，把 vmhgfs_mnt 的值改想要设置的目录，**重启**后就更改了。
+   
    ```shell
    # vmhgfs_mnt="/mnt/hgfs"
    vmhgfs_mnt="/www"
    ```
-
-   把 vmhgfs_mnt 的值改想要设置的目录，**重启**后就更改了。
+   
+   
+   
+   也可以使用软连接实现挂载自定义路径
+   
+   ```shell
+   # ln -s /mnt/hgfs/www /home/vagrant/www
+   # ls /home/vagrant/
+   www
+   ```
+   
+   
 
 
 

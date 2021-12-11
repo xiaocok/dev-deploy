@@ -45,7 +45,11 @@
 - 安装指定版本
 
   ```shell
-  # yum install -y docker-ce-20.10.7
+  # 安装最新版
+  yum install -y docker-ce
+  
+  # 安装指定版本
+  yum install -y docker-ce-20.10.7
   
   # docker version
   Client: Docker Engine - Community
@@ -61,7 +65,9 @@
     Version:          0.19.0
   ```
 
-- 创建docker目录
+  > 会附带安装containerd.io
+
+- **创建docker目录**
 
   ```shell
   mkdir /etc/docker
