@@ -1,0 +1,12 @@
+cluster.name: "docker-cluster"
+network.host: 0.0.0.0
+
+#elasticsearch-head的跨域问题
+http.cors.enabled: true 
+http.cors.allow-origin: "*"
+
+#认证信息
+#xpack.security.enabled: true
+
+#单节点
+#discovery.type: single-node

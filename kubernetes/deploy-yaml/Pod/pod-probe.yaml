@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.16
+    ports: 
+    - containerPort: 80
+    readinessProbe: #就绪探针
+      exec:
+        command: /data/check.sh
+      initialDelaySeconds: 5 #启动后延迟检测
+      periodSeconds: 10 #间隔的探测时间
+    livenessProbe: #存活探针
+      httpGet:
+        path: /health
+        port: 80
+      initialDelaySeconds: 15 #启动后延迟检测
+      periodSeconds: 20 #间隔的探测时间
+    startupProbe: #启动探针
+      tcpSocket: 
+        port: 5672
+      failureThreshold: 30 #检测失败后重试次数
+      periodSeconds: 10  #间隔的探测时间

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod-configmap-volume
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.16
+      volumeMounts:
+      - name: database-config-volume
+        mountPath: /etc/database-config
+      - name: file-config-volume
+        mountPath: /etc/file-config
+      - name: yaml-config-volume
+        mountPath: /etc/yaml-config
+      - name: dir-config-volume
+        mountPath: /etc/dir-config      # 挂载ConfigMap卷的位置
+        readOnly: true
+  volumes:
+    - name: database-config-volume
+      configMap:
+        name: database-config
+    - name: file-config-volume
+      configMap:
+        name: file-config
+    - name: yaml-config-volume
+      configMap:
+        name: yaml-configmap
+    - name: dir-config-volume		# 在pod中直接创建configMap
+      configMap:
+        name: dir-config		# 定义卷类型为ConfigMap

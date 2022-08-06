@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-resouce
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.16
+    resources:
+      requests: #所需资源
+        memory: "64Mi"
+        cpu: "250m"
+      limits: #资源限制
+        memory: "128Mi"
+        cpu: "500m"

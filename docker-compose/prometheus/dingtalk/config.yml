@@ -1,0 +1,7 @@
+## Targets, previously was known as "profiles"
+targets:
+  webhook:
+    # 钉钉的发送地址
+    url: https://oapi.dingtalk.com/robot/send?access_token=
+    # 签名
+    secret:  

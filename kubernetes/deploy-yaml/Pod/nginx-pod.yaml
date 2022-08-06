@@ -1,0 +1,8 @@
+apiVersion: v1 #表示api资源是哪一个组及版本
+kind: Pod #表示资源类别
+metadata: #表示元数据
+  name: nginx #名称，作用域在名称空间内唯一
+spec: #表示期望状态
+  containers: #表示容器资源
+  - name: nginx #名称，作用域在Pod内唯一
+    image: nginx:1.16 #指定镜像

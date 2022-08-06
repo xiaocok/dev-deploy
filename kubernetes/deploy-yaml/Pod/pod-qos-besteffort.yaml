@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-qos-besteffort
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.16
+    resources: # 不指定
