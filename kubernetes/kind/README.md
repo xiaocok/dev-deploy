@@ -2,6 +2,10 @@
 
 
 
+[TOC]
+
+
+
 ## Kind 相比于 Minikube 有什么优势呢？
 
 **基于 Docker 而不是虚拟化**
@@ -25,10 +29,6 @@ Kind 支持多角色的节点部署，你可以通过配置文件控制你需要
 1. 安装防火墙
 2. [安装docker-ce](../../docker/docker-ce/CentOS安装.md)
 3. [docker加速](../../docker/docker-ce/Docker加速.md)
-
-
-
-
 
 
 
@@ -128,7 +128,7 @@ kind create cluster --image kindest/node:v1.20.0
 
 ### 根据Yaml创建集群
 
-> **建议使用该方式安装**
+> 建议使用该方式安装
 
 **vim kindcnf.yaml**
 
@@ -206,7 +206,28 @@ docker inspect kindest/node:v1.18.2
 
 
 
+### 离线安装集群
+
+```text
+REPOSITORY                     TAG                  IMAGE ID       CREATED         SIZE
+kindest/kindnetd               v20200725-4d6bea59   b77790820d01   17 months ago   117MB
+kindest/haproxy                v20200708-548e36db   2a35acc4ff2f   18 months ago   24.5MB
+kindest/node                   v1.20.0              ad1bcd4daa66   13 months ago   1.33GB
+```
+
+离线安装需要下载镜像：
+
+kindest/node		安装k8s的node节点的镜像，以docker方式执行k8s的节点
+
+kindest/haproxy   使用kind安装时，需要下载的镜像
+
+
+
+
+
 **使用kubeadmConfig配置文件方式**
+
+> 仅供参考，不推荐此方式
 
 ```yaml
 kind: Cluster
@@ -319,12 +340,17 @@ docker start test-drone-control-plane
 
 **加载docker镜像至集群**
 
+**kind load docker-image**
+
+**kind load image-archive**
+
 ```shell
 # 加载my-custom-image-0和my-custom-image-1的docker镜像至kind的集群
 kind load docker-image my-custom-image-0 my-custom-image-1
 
-# 指定名称
+# 指定集群名称
 kind load docker-image --name aguncn  nginx:1.16-alpine
+kind load docker-image alpine:3.15 --name kind-cluster
 
 # 从二进制文件加载至集群
 kind load image-archive /my-image-archive.tar
@@ -336,9 +362,10 @@ kind load image-archive /my-image-archive.tar
 
 ```shell
 docker exec -it my-node-name crictl images
+docker exec -it kind-cluster-control-plane crictl images
 ```
 
-> my-node-name即为节点的名称
+> my-node-name即为节点的名称（kubectl get nodes获取名称），不是集群的名称
 
 
 
@@ -383,6 +410,51 @@ crictl --runtime-endpoint unix:///run/containerd/containerd.sock logs CONTAINERI
 
 
 ## 创建多集群
+
+
+
+
+
+## 多集群管理
+
+### 多集群切换
+
+```shell
+kubectl cluster-info           					# 获取k8s集群信息
+kubectl config view            					# 获取k8s集群管理配置信息，也就是 .kube/config 文件内容
+kubectl config get-contexts    					# 查看集群列表的context信息，并选中当前的集群
+kubectl config set-context minikube --user=minikube --cluster=minikube --namespace=demo  # 设置上下文
+kubectl config set current-context minikube   	# 切换到名称为 minikube 的集群中
+kubectl config use-context minikube           	# 切换到名称为 minikube 的集群中
+```
+
+
+
+### 设置集群角色
+
+```shell
+
+kubectl label nodes test1 node-role.kubernetes.io/master=       			# 设置 test1 为 master 角色
+kubectl label nodes 192.168.0.92 node-role.kubernetes.io/node=  			# 设置 test2 为 node 角色
+kubectl taint nodes test1 node-role.kubernetes.io/master=true:NoSchedule    # 设置 master 一般情况下不接受负载
+kubectl taint nodes test1 node-role.kubernetes.io/master-        			# master运行pod
+kubectl taint nodes test1 node-role.kubernetes.io/master=:NoSchedule   		# master不运行pod
+```
+
+
+
+### 设置kubectl shell命令自动补全
+
+```shell
+kubectl completion -h
+sudo yum -y install bash-completion
+source /usr/share/bash-completion/bash_completion
+type _init_completion
+echo 'source <(kubectl completion bash)' >> ~/.bashrc
+source ~/.bashrc
+```
+
+参考：[自动补全](https://kubernetes.io/docs/tasks/tools/install-kubectl/#enabling-shell-autocompletion)
 
 
 
