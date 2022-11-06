@@ -1,0 +1,124 @@
+version: '3.5'
+
+services:
+    grafana:
+        image: grafana/grafana:7.1.5
+        restart: always
+        ports:
+            #grafana的web访问端口
+            - "3000:3000"
+        environment:
+            # 登录用户名、密码
+            - "GF_SECURITY_ADMIN_USER=admin"
+            - "GF_SECURITY_ADMIN_PASSWORD=admin"
+            - "GF_INSTALL_PLUGINS=vertamedia-clickhouse-datasource"
+        volumes:
+            - "./grafana/plugins:/var/lib/grafana/plugins"
+            - "./grafana/conf/defaults.ini:/usr/share/grafana/conf/defaults.ini"
+        networks:
+            - network-prometheus-clickhouse
+        depends_on:
+            - clickhouse-server
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "1g"
+    clickhouse-server:
+        #image: yandex/clickhouse-server:22.1
+        #image: clickhouse/clickhouse-server:22.10
+        #image: clickhouse/clickhouse-server:21.3
+        image: clickhouse/clickhouse-server:22.1
+        ports:
+            # Port 9000 is for clickhouse-client program
+            # prom2click的dns连接信息需要使用9000端口
+            - "9000:9000"
+            # Port 8123 is for HTTP.
+            # 数据库工具：tabix/DBeaver需要使用8123端口
+            - "8123:8123"
+        networks:
+            - network-prometheus-clickhouse
+        volumes:
+            - "./clickhouse/etc-clickhouse-server:/etc/clickhouse-server"
+            - "./clickhouse/lib-clickhouse:/var/lib/clickhouse"
+        ulimits: 
+            nproc: 65535
+            nofile:
+                soft: 262144
+                hard: 262144
+    tabix:
+        image: spoonest/clickhouse-tabix-web-client:latest
+        ports:
+            - "8000:80"
+        environment:
+            - "user="
+            - "password="
+        networks:
+            - network-prometheus-clickhouse
+        depends_on:
+            - clickhouse-server
+    prom2click:
+        image: fhalim/prom2click:latest
+        #image: pull woshiaotian/prom2click:latest
+        #image: pull woshiaotian/prom2click:0.1.0.20201228171817.0555292616f37c5983fd73cc81b8a2324efb7cbb
+        ports:
+            - "9201:9201"
+        links:
+            - clickhouse-server:clickhouse-server
+        depends_on:
+            - clickhouse-server
+        # -ch.dsn       => clickhouse的连接信息，数据库信息
+        # -ch.table     => clickhouse的数据表
+        # -web.address  => 提供的web的http服务请求的IP和端口：xxx.xxx.xxx.xxx:9201
+        # -web.metrics  => 供Prometheus采集指标的接口地址：http://xxx.xxx.xxx.xxx:9201/metrics
+        command: -ch.dsn="tcp://clickhouse-server:9000?username=&password=&database=metrics&read_timeout=10&write_timeout=10&alt_hosts=" -ch.table="samples" -web.address=":9201" -web.metrics="/metrics" -web.write="/write"
+        #command: -ch.dsn="tcp://192.168.195.134:9000?username=&password=&database=metrics&read_timeout=10&write_timeout=10&alt_hosts=" -ch.table="samples" -web.address=":9201" -web.metrics="/metrics" -web.write="/write"
+        networks:
+            - network-prometheus-clickhouse
+    prometheus:
+        #image: prom/prometheus:v2.23.0
+        #image: prom/prometheus:v2.39.1
+        image: prom/prometheus:v2.17.0
+        restart: always
+        ports:
+            #prometheus的web/api访问端口
+            - "9090:9090"
+        links:
+            - node-exporter:node-exporter
+            - prom2click:prom2click
+            - clickhouse-server:clickhouse-server
+        depends_on:
+            - prom2click
+            - node-exporter
+        volumes:
+            - "./prometheus/data:/prometheus"
+            - "./prometheus/conf/prometheus.yml:/etc/prometheus/prometheus.yml"
+            - "./prometheus/conf/rules:/etc/prometheus/rules"
+        networks:
+            - network-prometheus-clickhouse
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "1g"
+    node-exporter:
+        #grafana模板id：8919
+        image: prom/node-exporter:v1.0.1
+        restart: always
+        network_mode: "host"
+        pid: "host"
+        volumes:
+            - "/:/host:ro,rslave"
+        command:
+            - "--path.rootfs=/host"
+            - "--web.listen-address=:9100"
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "1g"
+
+networks:
+    #网络名称
+    network-prometheus-clickhouse:
+        #桥接模式
+        driver: bridge
+        #允许独立的网络连接到该网络上
+        attachable: true

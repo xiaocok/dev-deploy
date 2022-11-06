@@ -13,3 +13,9 @@
 .docker/etcd/etcd-google-cluster/etcd-s1
 .docker/etcd/etcd-google-cluster/etcd-s2
 .docker/etcd/etcd-google-cluster/etcd-s3
+
+#clickhouse
+docker/clickhouse/clickhouse
+docker-compose/prometheus+clickhouse/clickhouse/lib-clickhouse
+docker-compose/prometheus+clickhouse/grafana/plugins
+docker-compose/prometheus+clickhouse/prometheus/data

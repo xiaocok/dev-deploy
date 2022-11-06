@@ -1,0 +1,1 @@
+docker run -d -p 9201:9201 fhalim/prom2click -ch.dsn="tcp://192.168.195.134:9000?username=&password=&database=metrics&read_timeout=10&write_timeout=10&alt_hosts=" -ch.table="samples" -web.address=":9201" -web.metrics="/metrics" -web.write="/write"
