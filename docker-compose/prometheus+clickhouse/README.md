@@ -8,11 +8,15 @@
 
 #### 1.1 给prometheus的目录响应的写权限
 
-    chmod +666 prometheus/data
+    chmod +777 prometheus/data
 
+#### 1.2 创建网络
 
+```shell
+docker network create network-prometheus-clickhouse
+```
 
-#### 1.2 运行docker-compose
+#### 1.3 运行docker-compose
 
 ```shell
 docker-compose up -d
@@ -77,7 +81,7 @@ http://宿主机IP:3000
 
 > Configuration > Data Sources > Add data source > 搜索 clickhouse > 选则 Altinity plugin for ClickHouse
 
-地址输入：http://宿主机IP:8123
+地址输入：http://clickhouse-server:8123
 
 > 这里是http，需要使用8123端口
 
@@ -139,7 +143,8 @@ GROUP BY
 **添加clickhouse数据源**
 
 ```text
-http://宿主机IP:8123
+Grafana访问	http://clickhouse-server:8123
+外部访问	   http://宿主机:8123
 ```
 
 
@@ -231,9 +236,8 @@ docker run -d \
 ## 参考
 
 - [prometheus的远程存储到clickhouse里面，prometheus store clickhouse](https://blog.csdn.net/weixin_40126236/article/details/103821307)
-
+- [Grafana上添加ClickHouse数据源](https://blog.51cto.com/u_13753753/5669276)
 - https://github.com/mindis/prom2click
-
 - https://hub.docker.com/r/fhalim/prom2click
 - [告警功能配置说明](https://www.bookstack.cn/read/clickvisual-0.2-zh/d411d6e8f7858eb1.md)
 - [ClickHouse常用SQL](https://www.bookstack.cn/read/clickvisual-0.2-zh/46b2c9ff9e325523.md)

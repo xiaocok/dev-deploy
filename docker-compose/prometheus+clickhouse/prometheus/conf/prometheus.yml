@@ -7,11 +7,11 @@ global:
 # Remote write configuration (for Graphite, OpenTSDB, InfluxDB or Clickhouse).
 remote_write:
     # 填写prom2click的地址
-    #- url: "http://prom2click:9201/write"
-    - url: "http://192.168.195.134:9201/write"
+    - url: "http://prom2click:9201/write"
+    #- url: "http://192.168.195.134:9201/write"
 remote_read:
-    #- url: "http://prom2click:9201/read"
-    - url: "http://192.168.195.134:9201/read"
+    - url: "http://prom2click:9201/read"
+    #- url: "http://192.168.195.134:9201/read"
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
@@ -29,8 +29,9 @@ scrape_configs:
   - job_name: 'node-cluster'
     static_configs:
       - targets:
-        - 'node-exporter:9100'
+        #- '192.168.195.134:9100'
+        - 'clickhouse-server:9100'
   # 添加如下 clickhouse 监控
-  - job_name: "clickhouse-server"
-    static_configs:
-      - targets: ['clickhouse-server:9363'] # 默认端口号为 9396，要跟 clickhouse 的配置相同
+  #- job_name: "clickhouse-server"
+  #  static_configs:
+  #    - targets: ['192.168.195.134:9363'] # 默认端口号为 9396，要跟 clickhouse 的配置相同
