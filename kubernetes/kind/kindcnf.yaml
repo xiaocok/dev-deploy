@@ -1,0 +1,25 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  # 监听地址
+  apiServerAddress: "192.168.195.134"
+  # 监听端口，当启动多集群时，需要这里监听的端口不一致。
+  apiServerPort: 6443
+nodes:
+# 多节点集群，默认安装的集群只带上了一个控制节点，这里设置了一个工作节点
+# 角色控制节点(master)、工作节点(node)，镜像使用sha256的版本
+- role: control-plane
+  image: kindest/node:v1.20.0@sha256:b40ecf8bcb188f6a0d0f5d406089c48588b75edc112c6f635d26be5de1c89040
+  extraPortMappings:
+    - containerPort: 30100
+      hostPort: 30100
+    - containerPort: 30900
+      hostPort: 30900
+    - containerPort: 30300
+      hostPort: 30300
+- role: worker
+  image: kindest/node:v1.20.0@sha256:b40ecf8bcb188f6a0d0f5d406089c48588b75edc112c6f635d26be5de1c89040
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+    endpoint = ["https://registry.docker-cn.com"]

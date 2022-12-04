@@ -128,7 +128,7 @@ kind create cluster --image kindest/node:v1.20.0
 
 ### 根据Yaml创建集群
 
-> 建议使用该方式安装
+> 建议使用该方式安装，**注意：ApiServer的地址调整为实际的地址**
 
 **vim kindcnf.yaml**
 
@@ -144,9 +144,9 @@ nodes:
 # 多节点集群，默认安装的集群只带上了一个控制节点，这里设置了一个工作节点
 # 角色控制节点(master)、工作节点(node)，镜像使用sha256的版本
 - role: control-plane
-  image: kindest/node:v1.20.0@sha256:b40ecf8bcb188f6a0d0f5d406089c48588b75edc112c6f635d26be5de1c89040
+  image: kindest/node:v1.24.0@sha256:4bec67ade4adfd316ff95545a015d3071b3607c73ec167f21cba77c00a6e38c5
 - role: worker
-  image: kindest/node:v1.20.0@sha256:b40ecf8bcb188f6a0d0f5d406089c48588b75edc112c6f635d26be5de1c89040
+  image: kindest/node:v1.24.0@sha256:4bec67ade4adfd316ff95545a015d3071b3607c73ec167f21cba77c00a6e38c5
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
@@ -157,7 +157,7 @@ containerdConfigPatches:
 
 ```shell
 # 如果config中未指定image，则可以使用--image指定image
-kind create cluster --name kind-cluster --config kindcnf.yaml --image kindest/node:v1.20.0
+kind create cluster --name kind-cluster --config kindcnf.yaml --image kindest/node:v1.24.0
 ```
 
 **配置说明：**
@@ -179,6 +179,16 @@ kind create cluster --name kind-cluster --config kindcnf.yaml --image kindest/no
 > 拉取镜像时，有信息
 
 ```shell
+# docker pull kindest/node:v1.24.0
+......
+Digest: sha256:4bec67ade4adfd316ff95545a015d3071b3607c73ec167f21cba77c00a6e38c5
+Status: Downloaded newer image for kindest/node:v1.24.0
+docker.io/kindest/node:v1.24.0
+```
+
+
+
+```shell
 docker pull kindest/node:v1.20.0
 ......
 Digest: sha256:b40ecf8bcb188f6a0d0f5d406089c48588b75edc112c6f635d26be5de1c89040
@@ -189,7 +199,7 @@ docker.io/kindest/node:v1.20.0
 > inspect查看时，在RepoDigests属性中
 
 ```shell
-docker inspect kindest/node:v1.18.2
+docker inspect kindest/node:v1.20.0
 [
     {
         "Id": "sha256:ad1bcd4daa6607940a897527b6e7479c523759ad17d7f26b3d0e088fc062fef5",

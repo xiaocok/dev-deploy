@@ -115,7 +115,6 @@ services:
             #- "--path.rootfs=/host"
             - "--path.procfs=/host/proc"
             - "--path.sysfs=/host/sys"
-            - --collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($|/)"
             - "--web.listen-address=:9100"
         logging:
             driver: "json-file"
