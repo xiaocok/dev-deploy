@@ -235,7 +235,7 @@ kindest/haproxy   使用kind安装时，需要下载的镜像
 
 
 
-**使用kubeadmConfig配置文件方式**
+#### **使用kubeadmConfig配置文件方式**
 
 > 仅供参考，不推荐此方式
 
@@ -282,7 +282,7 @@ nodes:
 - role: worker
 ```
 
-**暴露端口**
+#### **暴露端口**
 
 	nodes:
 	- role: control-plane
@@ -294,7 +294,7 @@ nodes:
 
 
 
-**挂载文档**
+#### **挂载文档**
 
 ```yaml
 nodes:
