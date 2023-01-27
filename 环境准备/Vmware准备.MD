@@ -291,27 +291,56 @@
    ```
 
    
-   
+
    编辑`/etc/init.d/vmware-tools`，把 vmhgfs_mnt 的值改想要设置的目录，**重启**后就更改了。
-   
+
    ```shell
    # vmhgfs_mnt="/mnt/hgfs"
    vmhgfs_mnt="/www"
    ```
+
    
-   
-   
+
    也可以使用软连接实现挂载自定义路径
-   
+
    ```shell
    # ln -s /mnt/hgfs/www /home/vagrant/www
    # ls /home/vagrant/
    www
    ```
-   
+
    
 
+   设置开机启动
 
+   > /etc/rc.d/rc.local为用户自定义开机启动脚本
+
+   ```shell
+   # 添加执行权限
+   chmod +x /etc/rc.d/rc.local
+   
+   # 编辑用户自定义开机启动脚本
+   vi /etc/rc.d/rc.local
+   
+   # 添加以下挂载信息并保存
+   ln -s /mnt/hgfs/www /home/vagrant/www
+   ```
+
+3. 设置开机自动export环境变量【可选】
+
+   > /etc/profile.d/sh.local为用户级别环境变量导出
+
+   ```shell
+   # 编辑用户级别环境变量导出
+   vi /etc/profile.d/sh.local
+   
+   # 添加导出变量
+   export GOROOT=/usr/local/go
+   export GOPATH=/home/vagrant/go
+   export PATH=$PATH:/usr/local/bin:$GOROOT/bin:$GOPATH/bin
+   ```
+
+   
 
 ### 参考
 
