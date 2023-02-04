@@ -195,6 +195,12 @@
 
    如果安装了早期版本的 VMware Tools，则菜单项是 **更新 VMware Tools**。
 
+   > 如果 `安装 VMware Tools` 显示为灰色则手动选则iso镜像，iso文件在程序安装目录下，快捷方式->右键->属性->打开文件所在的位置。
+   >
+   > Linux的镜像：C:\Program Files (x86)\VMware\VMware Workstation\linux.iso
+   >
+   > Windows的镜像：C:\Program Files (x86)\VMware\VMware Workstation\windows.iso
+
 2. 在虚拟机中，打开终端窗口。
 
 3. 运行不带参数的 mount 命令，以确定 Linux 发行版是否已自动挂载 VMware Tools 虚拟 CD-ROM 映像。

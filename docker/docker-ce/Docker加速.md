@@ -49,13 +49,13 @@
             "https://mirror.baidubce.com"
         ]
     }
-
+    
     vim /etc/docker/daemon.json
     {
         "registry-mirrors": [
             "https://docker.mirrors.ustc.edu.cn",
             "https://registry.docker-cn.com",
-            "http://hub-mirror.c.163.com",
+            "https://hub-mirror.c.163.com",
             "https://xxxxx.mirror.aliyuncs.com",
             "http://xxxxx.m.daocloud.io"
         ]
@@ -69,7 +69,7 @@
 检查加速器是否生效
 
     执行 $ docker info，如果从结果中看到了如下内容，说明配置成功。
-
+    
     Registry Mirrors:
       https://hub-mirror.c.163.com/
       https://mirror.baidubce.com/
