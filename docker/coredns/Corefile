@@ -1,0 +1,13 @@
+.:53 {
+    errors
+    health {
+      lameduck 5s
+    }
+    ready
+    prometheus :9153
+    forward . /etc/resolv.conf
+    cache 30
+    loop
+    reload
+    loadbalance
+}
