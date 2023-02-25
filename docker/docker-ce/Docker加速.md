@@ -14,7 +14,7 @@
 
 * 网易加速
 
-    http://hub-mirror.c.163.com
+    https://hub-mirror.c.163.com
 
 
 * 百度云加速器
@@ -24,9 +24,8 @@
 * DaoCloud加速
 
     加速器页面：
-        
-    https://www.daocloud.io/mirror
-
+     https://www.daocloud.io/mirror
+    
     找到对应的加速器地址：
     
     http://xxxxx.m.daocloud.io    
