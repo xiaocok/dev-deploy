@@ -1,0 +1,40 @@
+version: '3.5'
+
+services:
+    coredns:
+        image: coredns/coredns:1.9.4
+        restart: always
+        command: -conf /etc/coredns/Corefile
+        ports:
+            - "53:53/tcp"
+            - "53:53/udp"
+            - "9153:9153"
+        volumes:
+            - "./Corefile:/etc/coredns/Corefile"
+        links:
+            - etcd:etcd
+        networks:
+            - default-net
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "1g"
+    etcd:
+        image: bitnami/etcd:3.5.7
+        restart: always
+        ports:
+            - "2379:2379"
+            - "2380:2380"
+        environment:
+            - ALLOW_NONE_AUTHENTICATION=yes
+            - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+        networks:
+            - default-net
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "1g"
+networks:
+    default-net:
+        external: true
+        name: default-net

@@ -1,0 +1,20 @@
+.:53 {
+    errors
+	debug
+	log
+    etcd {
+	  path /skydns
+	  endpoint http://etcd:2379
+	  fallthrough
+	}
+    health {
+      lameduck 5s
+    }
+    ready
+    prometheus :9153
+    #forward . /etc/resolv.conf
+    cache 30
+    loop
+    reload
+    loadbalance
+}
