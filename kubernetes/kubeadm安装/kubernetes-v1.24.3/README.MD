@@ -14,17 +14,17 @@ https://v1-24.docs.kubernetes.io/zh-cn/docs/setup/production-environment/tools/k
 
 
 
-| 服务               | 版本    |
-| ------------------ | ------- |
-| Kubernetus         | v1.24.3 |
-| Containerd         | v1.6.16 |
-| runc               | v1.1.4  |
-| cni                | v1.2.0  |
-| nerdctl            | v1.2.0  |
-| circtl             | v1.24.2 |
-| Flannel            | v0.20.2 |
-| flannel-cni-plugin | v1.1.2  |
-| Calico             | v3.25   |
+| 服务                                  | 版本    |
+| ------------------------------------- | ------- |
+| Kubernetus                            | v1.24.3 |
+| Containerd                            | v1.6.16 |
+| runc                                  | v1.1.4  |
+| cni                                   | v1.2.0  |
+| nerdctl                               | v1.2.0  |
+| circtl                                | v1.24.2 |
+| Flannel【镜像】                       | v0.20.2 |
+| flannel-cni-plugin【镜像/本地命令行】 | v1.1.2  |
+| Calico                                | v3.25   |
 
 
 
@@ -187,6 +187,16 @@ $ install -m 755 runc.amd64 /usr/local/sbin/runc
 $ curl -JLO https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
 $ mkdir -p /opt/cni/bin
 $ tar Cxzvf /opt/cni/bin cni-plugins-linux-amd64-v1.2.0.tgz
+
+# 添加PATH路径至/etc/profile，添加cni网络插件的二进制文件至PATH路径
+PATH=$PATH:/opt/cni/bin
+export PATH
+
+# 生效
+source /etc/profile
+
+# 重启containerd
+systemctl restart containerd
 ```
 
 #### (4) containerd命令行使用
@@ -210,6 +220,7 @@ ctr images ls ns k8s.io
 ```shell
 # 镜像标记tag
 ctr -n k8s.io i tag registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.2 k8s.gcr.io/pause:3.2
+ctr -n k8s.io i tag kafka-monitor:v1 kubebiz/kafka-monitor:v1
 
 # 删除镜像
 ctr -n k8s.io i rm k8s.gcr.io/pause:3.2
@@ -230,6 +241,10 @@ ctr -n=k8s.io image import dashboard.tar
 
 # 查看镜像，可以看到可以查询到了，如果未指定命令空间，则crictl images无法查看到镜像
 crictl images
+
+# 镜像导出、导入
+ctr image export docker.io/library/hello-world:latest > hello-world.tar
+ctr image import mysql8.tar.gz
 ```
 
 
@@ -307,7 +322,7 @@ crictl images
 crictl images rmi
 
 # 打包、提交、拉取
-crictl tag kafka-monitor:v1 kubebiz/kafka-monitor:v1
+ctr -n k8s.io i tag kafka-monitor:v1 kubebiz/kafka-monitor:v1
 crictl push kubebiz/kafka-monitor:v1
 crictl pull kubebiz/kafka-monitor:v1
 
@@ -324,6 +339,8 @@ crictl start 3e025dd50a72d956c4f140...
 
 
 ### 2、简介原理
+
+**★★该步骤前面已调整，无需再执行★★**
 
 #### (1) Cgroup 驱动程序简介
 
@@ -831,30 +848,87 @@ export KUBE_APISERVER=`kubectl config view -ojsonpath='{.clusters[0].cluster.ser
 
    
 
-#### (2) node节点初始化加入集群
+#### (2) 加入集群作为计算平面的node节点
 
 根据 **`kubeadm init`** 之后的提示，我们知道Node节点加入集群的命令如下：
 
 ```bash
 kubeadm join 192.168.137.200:6443 --token fm17us.mptry3ijamo9avr2 \
-        --discovery-token-ca-cert-hash sha256:b87cda5b45265db24b29260060fe8e537abb5547604d865a957dc7a026eb36a6
+        --discovery-token-ca-cert-hash sha256:b87cda5b45265db24b29260060fe8e537abb5547604d865a957dc7a026eb36a6 \
+        --v=5
 ```
 
 如果没有令牌，可以通过在控制平面节点上运行以下命令来获取令牌：
 
 ```shell
 kubeadm token list
+
+[root@master network-scripts]# kubeadm token list
+TOKEN                     TTL         EXPIRES                USAGES                   DESCRIPTION                                                EXTRA GROUPS
+irqt84.voof8xa53cec58mf   23h         2023-08-24T22:32:18Z   authentication,signing   <none>                                                     system:bootstrappers:kubeadm:default-node-token
 ```
 
 默认情况下，令牌会在 24 小时后过期。如果要在当前令牌过期后将节点加入集群， 则可以通过在控制平面节点上运行以下命令来创建新令牌：
 
 ```shell
 kubeadm token create
+
+[root@master network-scripts]# kubeadm token create
+irqt84.voof8xa53cec58mf
+```
+
+> --discovery-token-ca-cert-hash参数不变，即新的加入命令如下：
+
+```bash
+kubeadm join 192.168.137.200:6443 --token irqt84.voof8xa53cec58mf \
+        --discovery-token-ca-cert-hash sha256:b87cda5b45265db24b29260060fe8e537abb5547604d865a957dc7a026eb36a6 \
+        --v=5
 ```
 
 
 
-#### (3) 集群网络初始化（flannel）
+#### (3) 加入集群作为控制平面master节点
+
+[k8s集群添加master节点提示control plane instance a cluster that doesn‘t have a stable controlPlaneEndpoint ad](https://blog.csdn.net/hedao0515/article/details/126342939)
+
+[k8s 加入 node和master 节点报错记录](https://blog.csdn.net/weixin_44730648/article/details/126372714)
+
+如果不是使用的配置文件方式创建集群`kubeadm init --config kubeadm.conf --v=5`，而是使用的命令`kubeadm init --apiserver-advertise-address=192.168.137.200 --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=v1.24.3 --service-cidr=10.96.0.0/12 --pod-network-cidr=10.244.0.0/16 --v=5`创建的集群，那么一般创建集群完成后kubeadm-config中不会有controlplaneEndpoint这个配置，需要手动写入，否则无法加入集群。
+
+**主master节点执行**
+
+```bash
+ kubectl -n kube-system edit cm kubeadm-config
+```
+
+> 添加：controlPlaneEndpoint: 192.168.195.129:6443
+
+![image-20230818012539955](E:\WWW\dev-deploy\kubernetes\kubeadm安装\kubernetes-v1.24.3\README.assets\image-20230818012539955.png)
+
+加入控制平面需要etcd等证书，因为是 master节点 需要加 --control-plane --certificate-key 参数 --certificate-key 参数可以在主master节点使用 
+
+```bash
+# 每次新增节点都需要执行一次
+kubeadm init phase upload-certs --upload-certs
+
+[upload-certs] Storing the certificates in Secret "kubeadm-certs" in the "kube-system" Namespace
+[upload-certs] Using certificate key:
+c5e57ec1b4be2f0fa054f0bd586d1032006fe90ceef797b710a9fb4a59cb7412
+```
+
+如果使用 `--upload-certs` 调用 `kubeadm init` 命令， 你也可以对控制平面节点调用带 `--certificate-key` 参数的 `join` 命令， **将自动证书复制到该节点**。也无需人为额外的生成与复制。
+
+```bash
+kubeadm join 192.168.137.200:6443 --token fm17us.mptry3ijamo9avr2 \
+        --discovery-token-ca-cert-hash sha256:b87cda5b45265db24b29260060fe8e537abb5547604d865a957dc7a026eb36a6 \
+        --control-plane \
+        --certificate-key c5e57ec1b4be2f0fa054f0bd586d1032006fe90ceef797b710a9fb4a59cb7412
+        --v=5
+```
+
+
+
+#### (4) 集群网络初始化（flannel）
 
 回到master节点，输入**kubectl get nodes**命令，此时我们可以看到有三个节点
 
@@ -869,7 +943,7 @@ kubectl apply -f kube-flannel.yml
 
 通过命令**`kubectl get pod -n kube-flannel`**查看flannel的Pod启动情况，等到flannel的pod的状态变为Running时，这时，我们用`kubeclt get nodes`命令就会发现，所有节点的状态都变为`Ready`了。
 
-#### (4) 部署网络（Calico）
+#### (5) 部署网络（Calico）
 
 > Calico是一个纯三层网络，通过linux 内核的L3 forwarding来实现vRouter功能，区别于flannel等需要封包解包的网络协议
 
@@ -910,7 +984,7 @@ curl -LO https://projectcalico.docs.tigera.io/v3.25/manifests/calico.yaml
 ```shell
 # Cluster type to identify the deployment type
   - name: CLUSTER_TYPE
-  value: "k8s,bgp"
+    value: "k8s,bgp"
 # 下面添加
   - name: IP_AUTODETECTION_METHOD
     value: "interface=eth0"

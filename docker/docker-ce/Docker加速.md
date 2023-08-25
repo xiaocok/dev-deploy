@@ -15,6 +15,10 @@
 * 网易加速
 
     https://hub-mirror.c.163.com
+    
+* 七牛云加速器
+
+    https://reg-mirror.quniu.com
 
 
 * 百度云加速器
