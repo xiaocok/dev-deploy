@@ -4,6 +4,30 @@
 
 ---
 ## 准备
+
+替换yum源
+
+```shell
+yum install wget
+
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.back
+
+wget -O /etc/yum.repos.d/CentOS-7.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
+或者
+curl -o /etc/yum.repos.d/CentOS-7.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+curl -o /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
+
+sed -i 's#keepcache=0#keepcache=1#g' /etc/yum.conf
+yum clean all && yum makecache
+yum repolist
+
+#安装依赖
+yum -y install yum-utils createrepo plugin-priorities
+```
+
+
+
 安装防火墙(开发环境可以不用安装)
 1. 安装systemctl：
 ```shell
@@ -43,7 +67,7 @@ $ sudo yum remove docker \
 $ sudo rm -rf /var/lib/docker
 ```
 
-### 3、安装所需对应的依赖包<br/>
+### 3、安装所需对应的依赖包
 * yum-utils提供了yum-config-manager 效用，并device-mapper-persistent-data和lvm2由需要 devicemapper存储驱动程序
 ```shell script
 $ sudo yum install -y yum-utils \
@@ -56,6 +80,11 @@ $ sudo yum install -y yum-utils \
 $ sudo yum-config-manager \
     --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo
+    
+# 阿里云
+$ sudo yum-config-manager \
+    --add-repo \
+    https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 ```
 
 ### 5、可选：参数设置
@@ -100,9 +129,17 @@ $ sudo systemctl enable docker
 
 
 ---
-## 二、rpm包安装<br/>
+## 二、rpm包安装
 官网rpm包下载地址:
 https://download.docker.com/linux/centos/7/x86_64/stable/Packages/
+
+
+
+https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-24.0.6-1.el7.x86_64.rpm
+
+https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-24.0.6-1.el7.x86_64.rpm
+
+https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.6.24-3.1.el7.x86_64.rpm
 
 
 ## 参考
