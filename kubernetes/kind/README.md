@@ -257,7 +257,7 @@ kubeadmConfigPatches:
 	  pod-infra-container-image: registry.aliyuncs.com/google_containers/pause:3.1
 - |
   apiVersion: kubeadm.k8s.io/v1beta1
-  kind: InitConfiguration
+  kind: ClusterConfiguration
   metadata:
 	name: config
   networking:
@@ -266,6 +266,13 @@ kubeadmConfigPatches:
 nodes:
 # 节点的角色：控制节点
 - role: control-plane
+  # 设置启动参数
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
   # 可以单独指定节点的镜像
   image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
   # 将端口从节点映射到主机
@@ -276,6 +283,20 @@ nodes:
     listenAddress: "0.0.0.0"
     # Optional, defaults to tcp
     protocol: udp
+  - containerPort: 80
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443
+    protocol: TCP
+  - containerPort: 16443
+    hostPort: 16443
+    protocol: TCP
+  - containerPort: 2379
+    hostPort: 2379
+    protocol: TCP
+                        
+原文链接：https://blog.csdn.net/qq_34562093/article/details/123312786
 - role: control-plane
 # 工作节点
 - role: worker

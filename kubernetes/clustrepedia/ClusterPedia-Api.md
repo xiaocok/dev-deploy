@@ -48,6 +48,23 @@ kubectl get --raw="/apis/clusterpedia.io/v1beta1/resources/apis/apps/v1/deployme
 
 
 
+#### Owner
+
+```shell
+kubectl get --raw="/apis/clusterpedia.io/v1beta1/resources/clusters/cluster-1/api/v1/namespaces/default/pods?ownerUID=151ae265-28fe-4734-850e-b641266cd5da&ownerSeniority=1"
+
+kubectl get --raw="/apis/clusterpedia.io/v1beta1/resources/clusters/cluster-1/api/v1/namespaces/default/pods?ownerName=deploy-1&ownerSeniority=1"
+```
+
+
+
+#### 原生SQL
+
+```shell
+URL="/apis/clusterpedia.io/v1beta1/resources/apis/apps/v1/deployments"
+kubectl get --raw="$URL?whereSQL=(cluster='global') OR (namespace IN ('kube-system','default'))"
+```
+
 
 
 ### 接口地址示例
