@@ -846,7 +846,31 @@ export KUBE_APISERVER=`kubectl config view -ojsonpath='{.clusters[0].cluster.ser
    kubectl config use-context ${USER}@kubernetes --kubeconfig=${KUBECONFIG_PATH}
    ```
 
+   样例
    
+   ```yaml
+   apiVersion: v1
+   kind: Config
+   clusters:
+   - name: my-cluster
+     cluster:
+       certificate-authority: /path/to/ca.crt
+       server: https://my-cluster.example.com
+   contexts:
+   - name: my-context
+     context:
+       cluster: my-cluster
+       user: my-user
+   current-context: my-context
+   users:
+   - name: my-user
+     user:
+       token: abcdef1234567890
+   ```
+   
+   
+
+​		
 
 #### (2) 加入集群作为计算平面的node节点
 
