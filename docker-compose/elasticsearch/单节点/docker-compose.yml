@@ -6,9 +6,9 @@ services:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    #volumes:
-    #  - $pwd/es-data:/usr/share/elasticsearch/data
-    #  - $pwd/es-plugins:/usr/share/elasticsearch/plugins
+    volumes:
+      - ./es-data:/usr/share/elasticsearch/data
+      - ./es-plugins:/usr/share/elasticsearch/plugins
     ports:
       # 访问es
       - 9200:9200

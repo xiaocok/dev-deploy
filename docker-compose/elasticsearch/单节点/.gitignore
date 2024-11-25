@@ -1,0 +1,4 @@
+es-data/*
+es-plugins/*
+
+!elasticsearch-analysis-ik-7.17.5.zip
