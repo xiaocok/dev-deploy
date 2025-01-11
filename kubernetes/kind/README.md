@@ -328,6 +328,48 @@ nodes:
 
 
 
+#### 导入镜像
+
+```shell
+# 导入docker镜像，会自动导入每一个node节点
+kind load docker-image my-app:latest --name my-cluster
+
+# 导入tar镜像二进制文件
+kind load image-archive IMAGE.tar --name my-cluster
+
+# 查看导入情况
+kind get nodes
+docker exec -it <node-name> crictl images
+```
+
+使用导入的镜像
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: go-notify
+  namespace: default
+spec:
+  containers:
+  - name: go-notify
+    image: go-notify:latest
+    # 这里需要指定镜像不存在才拉取，存在则使用当前镜像，否则依然会从docker官方仓库去拉取镜像，提示没有镜像，拉取失败
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - name: config-volume
+      mountPath: /app.toml
+      subPath: app.toml
+  volumes:
+  - name: config-volume
+    configMap:
+      name: app-config
+```
+
+
+
+
+
 ## 常用命令
 
 **获取集群列表**
@@ -489,6 +531,107 @@ source ~/.bashrc
 
 
 
+## 问题
+
+### 证书续期
+
+1. 找到 Kind 集群的控制平面容器名称,容器名称不一定是这个
+
+   ```shell
+   docker ps --filter "name=kind-cluster-control-plane"
+   ```
+
+2. 进入 Kind 控制平面的容器
+
+   ```shell
+   docker exec -it kind-cluster-control-plane /bin/bash
+   ```
+
+3. 在容器内使用以下命令来更新证书，先备份/etc/kubernetes目录
+
+   ```shell
+   # 查看证书时间
+   kubeadm certs check-expiration
+   
+   # 更新证书
+   kubeadm certs renew all
+   ```
+
+4. 在控制平面容器内，重启 Kubernetes 控制平面组件，使更新后的证书生效
+
+   ```shell
+   pkill kube-apiserver
+   pkill kube-controller-manager
+   pkill kube-scheduler
+   ```
+
+5. 复制更新后的 admin.conf 到主机（宿主机执行），先将宿主机上config备份一下
+
+   ```shell
+   # 在宿主机中执行，需要退出容器
+   exit
+   
+   docker cp kind-cluster-control-plane:/etc/kubernetes/admin.conf ~/.kube/config
+   ```
+
+6. 修改拷贝过来的config配置
+
+   > 将kind-cluster-control-plane修改为之前配置的地址：域名或者IP。
+   >
+   > 可以只改这一项，也可以按下面的方式修改
+
+   ```yaml
+   vi ~/.kube/config
+   
+   apiVersion: v1
+   clusters:
+   - cluster:
+       certificate-authority-data: 
+       # server: https://kind-cluster-control-plane:6443
+       server: https://192.168.195.133:6443
+     name: kind-cluster
+   ```
+
+   除了certificate-authority-data、client-certificate-data、client-key-data几个证书和认证相关的信息，其他的都可以换为以前的值
+
+   ```yaml
+   apiVersion: v1
+   clusters:
+   - cluster:
+       certificate-authority-data: 
+       server: https://192.168.195.133:6443
+     name: kind-cluster
+   contexts:
+   - context:
+       cluster: kind-cluster
+       user: kubernetes-admin
+     name: kubernetes-admin@kind-cluster
+   current-context: kubernetes-admin@kind-cluster
+   kind: Config
+   preferences: {}
+   users:
+   - name: kubernetes-admin
+     user:
+       client-certificate-data: 
+       client-key-data: 
+   ```
+
+7. 重启docker容器
+
+   ```shell
+   # 重启master和节点，节点可能也需要更新证书
+   docker restart kind-cluster-control-plane
+   docker restart kind-cluster-worker
+   ```
+
+8. 验证
+
+   ```shell
+   kubectl get pod -A
+   ```
+
+   
+
 ## 参考
 
 - [Kind - Quick Start](https://kind.sigs.k8s.io/docs/user/quick-start/)
@@ -496,3 +639,4 @@ source ~/.bashrc
 - [Kind 安装单机k8s——windows](https://www.jianshu.com/p/d42cfa67fa84)
 - [Kubernetes crictl管理命令详解](https://blog.csdn.net/xixihahalelehehe/article/details/116591151)
 - [k8s crictl/ctr 命令总结](https://zhuanlan.zhihu.com/p/381545137)
+- [Kind部署的K8s证书过期后的解决方案](https://blog.csdn.net/qq_31292011/article/details/142822366)

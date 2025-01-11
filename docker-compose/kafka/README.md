@@ -18,6 +18,9 @@ https://github.com/segmentio/kafka-go
 | docker-compose-error.yml       | 多节点，联网异常         |
 
 
+### docker-compose运行
+> 指定docker-compsoe的文件，使用-f参数
+docker-compose -f docker-compose-single-node.yml up -d
 
 ### kafka参数
 

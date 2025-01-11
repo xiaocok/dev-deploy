@@ -501,7 +501,14 @@ kubeadm config print init-defaults
 通过**`kubeadm init`**命令，我们可以快速对master节点进行初始化
 
 ```shell
-kubeadm init --apiserver-advertise-address=192.168.137.200 --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=v1.24.3 --service-cidr=10.96.0.0/12 --pod-network-cidr=10.244.0.0/16 --v=5
+kubeadm init \
+--apiserver-advertise-address=192.168.137.200 \
+--image-repository registry.aliyuncs.com/google_containers \
+--kubernetes-version=v1.24.3 \
+--service-cidr=10.96.0.0/12 \
+--pod-network-cidr=10.244.0.0/16 \
+--certificate-duration=87600h \
+--v=5
 ```
 
 > I0201 23:23:34.445917   18951 kubelet.go:218] the value of KubeletConfiguration.cgroupDriver is empty; setting it to "systemd"
@@ -515,6 +522,7 @@ kubeadm init --apiserver-advertise-address=192.168.137.200 --image-repository re
 - kubernetes-version 指定k8s的版本。
 - service-cidr 服务的虚拟 IP 地址另外指定 IP 地址段
 - pod-network-cidr pod节点网络可以使用的 IP 地址段，这里使用10.244.0.0/16是因为后续使用flannel网络插件时的默认网段就是这个。
+- certificate-duration证书有效期：87600h是10年，8760h0m0s是1年
 
 `service-cidr`和`pod-network-cidr`的IP地址段设置是依据你service和pod的容量决定的。
 
@@ -1061,6 +1069,333 @@ kubectl delete node <node name>
 
 在控制平面主机上使用 `kubeadm reset` 来触发尽力而为的清理。
 
+```shell
+kubeadm reset
+
+ipvsadm --clear
+iptables -F
+iptables -X
+iptables -Z
+
+rm -rf /etc/cni/net.d
+rm -rf $HOME/.kube/config
+```
+
+
+
+## 五、异常
+
+### 1、证书过期
+
+**检查证书过期**
+
+```shell
+# 查看证书过期时间 => k8s 1.15+版本的查看方法
+kubeadm certs check-expiration
+```
+
+**对过期证书进行备份**
+
+```shell
+# 备份证书
+cp -rp /etc/kubernetes /etc/kubernetes.bak
+```
+
+**重新生成证书**
+
+```shell
+# 新版本(1.15+) - - 使用该命令不用提前删除过期证书
+kubeadm certs renew all
+```
+
+**备份旧的配置文件**
+
+```shell
+mv /etc/kubernetes/*.conf /tmp/
+```
+
+**重新生成新的配置文件**
+
+```shell
+# 新版本(1.15+)
+kubeadm init phase kubeconfig all
+# 指定版本、apiserver地址
+kubeadm init --apiserver-advertise-address=192.168.195.128 --kubernetes-version=v1.24.3 phase kubeconfig all
+```
+
+**更新 kubectl 配置**
+
+```shell
+# 备份配置文件
+cp -rp ~/.kube/config ~/.kube/config.bak
+
+# 更新配置文件
+cp /etc/kubernetes/admin.conf ~/.kube/config
+
+# 修改权限
+chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+**证书过期时间确认**
+
+```shell
+# 新版本(1.15+)查看方法
+kubeadm certs check-expiration
+
+# 单独查看（其他同理）
+openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -text |grep 'Not'
+```
+
+**重启 kubelet**
+
+> 所有 work 节点执行，如果你的 master 节点也作为 work 节点使用，那 master 节点也需要执行重启 kubelet 的操作。
+
+```shell
+systemctl restart kubelet
+systemctl status kubelet
+
+systemctl restart kubelet containerd docker
+```
+
+
+
+
+
+### 1、查看证书有效期
+
+> 证书默认有效期是1年
+
+#### kubeadm命令查看
+
+`kubeadm certs check-expiration`
+
+```shell
+[root@k8s-master ~]# kubeadm certs check-expiration
+[check-expiration] Reading configuration from the cluster...
+[check-expiration] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+
+CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED
+admin.conf                 Feb 02, 2024 13:52 UTC   31d             ca                      no
+apiserver                  Feb 02, 2024 13:52 UTC   31d             ca                      no
+apiserver-etcd-client      Feb 02, 2024 13:52 UTC   31d             etcd-ca                 no
+apiserver-kubelet-client   Feb 02, 2024 13:52 UTC   31d             ca                      no
+controller-manager.conf    Feb 02, 2024 13:52 UTC   31d             ca                      no
+etcd-healthcheck-client    Feb 02, 2024 13:52 UTC   31d             etcd-ca                 no
+etcd-peer                  Feb 02, 2024 13:52 UTC   31d             etcd-ca                 no
+etcd-server                Feb 02, 2024 13:52 UTC   31d             etcd-ca                 no
+front-proxy-client         Feb 02, 2024 13:52 UTC   31d             front-proxy-ca          no
+scheduler.conf             Feb 02, 2024 13:52 UTC   31d             ca                      no
+
+CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
+ca                      Jan 30, 2033 13:52 UTC   9y              no
+etcd-ca                 Jan 30, 2033 13:52 UTC   9y              no
+front-proxy-ca          Jan 30, 2033 13:52 UTC   9y              no
+[root@k8s-master ~]#
+```
+
+检查kubelet证书的有效期
+
+```shell
+openssl x509 -in /var/lib/kubelet/pki/kubelet-client-current.pem -noout -enddate
+openssl x509 -in /var/lib/kubelet/pki/kubelet-server-current.pem -noout -enddate
+openssl x509 -in /var/lib/kubelet/pki/kubelet.crt -noout -enddate
+```
+
+
+
+#### 解析证书查看
+
+```shell
+[root@k8s-master ~]# openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -text | grep 'Not After'
+            Not After : Feb  2 13:52:45 2024 GMT
+[root@k8s-master ~]# openssl x509 -in /etc/kubernetes/pki/etcd/server.crt -noout -text | grep 'Not After'
+            Not After : Feb  2 13:52:45 2024 GMT
+[root@k8s-master ~]#
+```
+
+
+
+### 2、证书续期
+
+> 续期的有效期，默认也是1年
+
+```shell
+# 指定资源的证书续期
+kubeadm certs renew apiserver # 资源名称使用上面查看到的证书的资源
+kubeadm certs renew apiserver-etcd-client
+
+# 全部续期
+kubeadm certs renew all
+```
+
+需要重启以下服务才生效
+
+> kube-apiserver, kube-controller-manager, kube-scheduler and etcd
+
+```shell
+# 服务形式安装，则重启4个服务
+systemctl restart kube-apiserver
+
+# kubeadm安装，由于是静态pod运行，需要重启静态pod，修改静态pod的yaml，自动滚动更新
+vi /etc/kubernetes/manifests 目前下的4个静态文件，增加一个annotations
+
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    restart: "2025-01-10"
+```
+
+
+
+### 3、节点续期
+
+#### 使用 kubeadm 更新所有证书
+
+您可以使用以下命令来更新集群中的所有证书，包括 kubelet 证书：
+
+```shell
+sudo kubeadm certs renew all --v=5
+```
+
+或者，对于较旧版本的 kubeadm，可以使用：
+
+```shell
+sudo kubeadm alpha certs renew all --v=5
+```
+
+#### 手动更新 kubelet 证书
+
+如果您只需要更新 kubelet 证书，可以手动进行操作。以下是详细步骤：
+
+1. 删除旧证书
+  首先，删除旧的 kubelet 证书（线上环境需要备份，移除流量）：
+
+  ```shell
+  sudo rm /var/lib/kubelet/pki/kubelet-client-current.pem
+  sudo rm /var/lib/kubelet/pki/kubelet-client-*.pem
+  ```
+
+2. 生成新的私钥和 CSR
+  生成新的私钥和证书签名请求 (CSR)：
+
+  ```shell
+  # <node-name>为节点名称
+  openssl genrsa -out /var/lib/kubelet/pki/kubelet-client.key 2048
+  openssl req -new -key /var/lib/kubelet/pki/kubelet-client.key -out /var/lib/kubelet/pki/kubelet-client.csr -subj "/CN=system:node:<node-name>/O=system:nodes"
+  ```
+
+3. 使用 Kubernetes CA 签署新的证书
+  使用 Kubernetes 的 CA 签署新的证书：
+
+  ```shell
+  # 续期100年
+  openssl x509 -req -in /var/lib/kubelet/pki/kubelet-client.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out /var/lib/kubelet/pki/kubelet-client-current.pem -days 36500
+  ```
+
+4. 重新启动 kubelet
+  重新启动 kubelet 服务以使其使用新的证书：
+
+  ```shell
+  sudo systemctl restart kubelet
+  ```
+
+  
+
+#### 使用 Kubernetes API 服务器的证书签发功能
+
+如果您有权限访问 Kubernetes API 服务器，可以通过 API 服务器的证书签发功能来生成新的 kubelet 证书。
+
+1. 生成新的私钥和 CSR
+  生成新的私钥和证书签名请求 (CSR)：
+
+  ```shell
+  # <node-name>为节点名称
+  openssl genrsa -out /var/lib/kubelet/pki/kubelet-client.key 2048
+  openssl req -new -key /var/lib/kubelet/pki/kubelet-client.key -out /var/lib/kubelet/pki/kubelet-client.csr -subj "/CN=system:node:<node-name>/O=system:nodes"
+  ```
+
+2. 创建一个 Kubernetes CSR 对象
+  创建一个 Kubernetes CSR 对象，并提交：
+
+  ```yaml
+  apiVersion: certificates.k8s.io/v1
+  kind: CertificateSigningRequest
+  metadata:
+    name: <node-name>-csr
+  spec:
+    groups:
+    - system:authenticated
+    request: $(cat /var/lib/kubelet/pki/kubelet-client.csr | base64 | tr -d '\n')
+    usages:
+    - digital signature
+    - key encipherment
+    - client auth
+  ```
+
+  保存为 <csr-file>.yaml，然后应用：
+
+  ```yaml
+  kubectl apply -f <csr-file>.yaml
+  kubectl certificate approve <node-name>-csr
+  ```
+
+3. 获取签发的证书并保存
+  获取签发的证书并保存：
+
+  ```shell
+  kubectl get csr <node-name>-csr -o jsonpath='{.status.certificate}' | base64 --decode > /var/lib/kubelet/pki/kubelet-client-current.pem
+  ```
+
+4. 重新启动 kubelet
+  重新启动 kubelet 服务：
+
+  ```yaml
+  sudo systemctl restart kubelet
+  ```
+
+  
+
+### 4、其它
+
+使用最近的kubeconfig：/etc/kubernetes/admin.conf
+
+> 更新证书时，会自动更新这里的kubeconfig文件，旧地方kubeconfig文件，后续会过去，使用这里新的kubeconfig文件
+
+```shell
+mv ~/.kubec/config ~/.kubec/config.back
+cp /etc/kubernetes/admin.conf ~/.kubec/config
+```
+
+
+
+
+
+```bash
+kubeadm certs renew kubelet-client
+kubeadm certs renew kubelet-server
+
+service kubelet restart
+
+openssl x509 -in /var/lib/kubelet/pki/kubelet-client-current.pem -noout -enddate
+openssl x509 -in /var/lib/kubelet/pki/kubelet-server-current.pem -noout -enddate
+```
+
+
+
+生成新的kubeconfig
+
+```shell
+# 生成证书
+kubeadm init --apiserver-advertise-address=192.168.195.128 --kubernetes-version=v1.24.3 phase certs all
+
+# 生成master的kubeconfig
+kubeadm init --apiserver-advertise-address=192.168.195.128 --kubernetes-version=v1.24.3 phase kubeconfig all
+
+# 生成kubelet至临时目录，避免覆盖master节点
+kubeadm init --apiserver-advertise-address=192.168.195.128 --kubernetes-version=v1.24.3 phase kubeconfig kubelet --node-name k8s-cluster --kubeconfig-dir /tmp/
+```
+
 
 
 ## 参考
@@ -1092,3 +1427,15 @@ kubectl delete node <node name>
 [k8s安装calico网络插件](https://blog.csdn.net/m0_61237221/article/details/125217833)
 
 [k8s安装calico网络](https://www.jianshu.com/p/2c436a0ffe7f)
+
+[kube-controller未自动续期，导致kubelet-client-current.pem证书过期问题修复](https://blog.csdn.net/weixin_42431069/article/details/141359601)
+
+[K8s 集群（kubeadm） CA 证书过期解决方案](https://blog.csdn.net/IT_ZRS/article/details/140191159)
+
+[kubelet 证书过期处理](https://www.cnblogs.com/zbhlinux/p/18042731)
+
+[Kubernetes集群证书过期解决方案：使用kubeadm为证书续期](https://www.cnblogs.com/renshengdezheli/p/18519390)
+
+[K8s集群证书续签100年有效期](https://devpress.csdn.net/k8s/66c9a63d13e4054e7e7d5327.html)
+
+[K8s集群证书自动续期](https://blog.51cto.com/u_15316242/9580608)

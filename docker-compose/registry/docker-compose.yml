@@ -1,0 +1,72 @@
+version: '3'
+
+services:
+  registry:
+    image: "registry:2.8.3"
+    hostname: registry
+    # 镜像的存储位置
+    #volumes:
+    #  - registry_data:/var/lib/registry_data
+    environment:
+      -REGISTRY_HTTP_HEADERS_ACCESS_CONTROL_ALLOW_ORIGIN='["*"]'
+    ports:
+      - "5000:5000"
+    #restart: always
+ 
+  registry-ui:
+    image: "joxit/docker-registry-ui:latest"
+    environment:
+      - REGISTRY_TITLE=本地私有镜像仓库
+      - REGISTRY_URL=http://registry:5000
+    depends_on:
+      - registry
+    links:
+      - registry
+    ports:
+      - "5001:80"
+    #restart: always
+ 
+  registry-web:
+    image: "hyper/docker-registry-web"
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=secret_cookie
+      - REGISTRY_URL=http://registry:5000/v2 
+      - REGISTRY_NAME=本地私有镜像仓库
+    depends_on:
+      - registry
+    links:
+      - registry
+    ports:
+      - "5002:8080"
+    #restart: always
+
+  jc21-registry-ui:
+    image: jc21/registry-ui
+    ports:
+      - 5003:80
+    depends_on:
+      - registry
+    links:
+      - registry
+    environment:
+      - REGISTRY_HOST=registry:5000
+      #- REGISTRY_SSL=true
+      - REGISTRY_DOMAIN=registry:5000
+      #- REGISTRY_STORAGE_DELETE_ENABLED=
+      #- REGISTRY_USER=
+      #- REGISTRY_PASS=
+    #restart: always
+  ui-for-docker:
+    image: uifd/ui-for-docker
+    ports:
+      - 5004:9000
+    depends_on:
+      - registry
+    links:
+      - registry
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    #restart: always
+    
+volumes:
+  registry_data:
