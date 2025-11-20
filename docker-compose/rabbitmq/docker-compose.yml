@@ -5,7 +5,11 @@ services:
     image: "rabbitmq:3-management"
     hostname: rabbitmq1
     environment:
-      - RABBITMQ_ERLANG_COOKIE=secret_cookie
+      # RABBITMQ_ERLANG_COOKIE: secret_cookie
+      RABBITMQ_ERLANG_COOKIE: 'secret cookie here'
+      RABBITMQ_DEFAULT_USER: 'rabbitmq' # user
+      RABBITMQ_DEFAULT_PASS: 'rabbitmq' # password
+      RABBITMQ_DEFAULT_VHOST: /
     volumes:
       - mq1-data:/var/lib/rabbitmq
     ports:
@@ -18,6 +22,8 @@ services:
     hostname: rabbitmq2
     environment:
       - RABBITMQ_ERLANG_COOKIE=secret_cookie
+      - RABBITMQ_DEFAULT_USER=rabbitmq # user
+      - RABBITMQ_DEFAULT_PASS=rabbitmq # password
     volumes:
       - mq2-data:/var/lib/rabbitmq
     depends_on:
@@ -34,6 +40,8 @@ services:
     hostname: rabbitmq3
     environment:
       - RABBITMQ_ERLANG_COOKIE=secret_cookie
+      - RABBITMQ_DEFAULT_USER=rabbitmq # user
+      - RABBITMQ_DEFAULT_PASS=rabbitmq # password
     volumes:
       - mq3-data:/var/lib/rabbitmq
     depends_on:

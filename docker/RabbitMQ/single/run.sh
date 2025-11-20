@@ -3,7 +3,7 @@
 #默认账号、密码：guest
 
 docker run -d \
-	 --name rabbitmq \
+	--name rabbitmq \
 	-p 5672:5672 \
 	-p 15672:15672 \
 	-e RABBITMQ_DEFAULT_USER=guest \
