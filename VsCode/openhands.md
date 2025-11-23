@@ -342,23 +342,35 @@ Dev Containers: Attach to Running Container...
 
 > 连接容器，会在容器中下载对应版本的VsCode
 
+连接成功效果
+
+ ![image-20251123183127693](openhands.assets/image-20251123183127693.png)
+
 
 
 #### VsCode打开代码
 
-> 目录选择
+**目录选择**
 
 /app
 
 
 
-选择python环境
+**选择python环境**
 
+/root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12
+
+> 这里有全套的python环境
+
+激活环境
+
+```shell
 root@76a5c21f8e84:/app# source /root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12/bin/activate
+```
 
 
 
-VsCode安装插件
+**VsCode安装插件**
 
 > python开发调试插件
 
@@ -373,13 +385,71 @@ VsCode安装插件
 
 ```shell
 cd frontend
+
 npm install
+
+# 详细过程（推荐调试用）：显示每个包的下载、解压、链接过程
+# npm install --loglevel verbose
+# 或更详细的，极其详细（含网络请求、内部状态）：查看完整调试日志（排查安装失败时很有用）
+# npm install --loglevel silly
+
 npm run build
+```
+
+##### 如果无法下载
+
+DNS无法解析
+
+```shell
+nslookup registry.npmjs.org
+# 或
+dig registry.npmjs.org +short
+```
+
+1.**修改DNS**
+
+> 可以临时修改 `/etc/resolv.conf`
+
+```shell
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+```
+
+2.**修改docker的容器配置**
+
+```shell
+vi /etc/docker/daemon.json
+
+{
+  "ipv6": false,
+  "experimental": false,
+  "dns": ["8.8.8.8", "1.1.1.1"]
+}
+```
+
+🔸 `"ipv6": false` 是关键，它会禁止 Docker 在创建网络时启用 IPv6。
+🔸 同时建议配置可靠 DNS（如 `8.8.8.8`）和镜像加速器。
+
+**重启 Docker 服务**
+
+```shell
+sudo systemctl daemon-reload
+sudo systemctl restart docker
 ```
 
 
 
-创建调试文件
+**创建launch.json调试文件**
+
+调试器选择：Python Debugger
+
+调试配置选择：带有参数的Python文件 - 使用参数调试当前活动的python文件
+
+> 选项1和2没有太大区别，只是配置有一些不同，下面会覆盖配置
+
+![image-20251123184001356](openhands.assets/image-20251123184001356.png)
+
+修改调整配置信息如下：
 
 ```json
 {
