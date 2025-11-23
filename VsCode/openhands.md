@@ -515,6 +515,28 @@ ghcr.io/openhands/agent-server:15f565b-python
 
    
 
+**无法监控到文件**：文件描述符过少
+
+https://code.visualstudio.com/docs/setup/linux#_visual-studio-code-is-unable-to-watch-for-file-changes-in-this-large-workspace-error-enospc
+
+```shell
+# 查看当前
+cat /proc/sys/fs/inotify/max_user_watches
+
+# 调整
+vi /etc/sysctl.conf
+# 加入 或 修改
+fs.inotify.max_user_watches=524288
+
+# 生效
+sudo sysctl -p
+
+# 再次查看
+cat /proc/sys/fs/inotify/max_user_watches
+```
+
+
+
 
 
 ### 社区方式devcontainer
