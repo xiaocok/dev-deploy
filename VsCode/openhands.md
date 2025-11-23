@@ -64,6 +64,18 @@ https://containers.dev/
 1. [Install Docker Desktop on Mac](https://docs.docker.com/desktop/setup/install/mac-install).
 2. Open Docker Desktop, go to `Settings > Advanced` and ensure `Allow the default Docker socket to be used` is enabled.
 
+Tested with Ubuntu 22.04.
+
+### Linux
+
+> Tested with Ubuntu 22.04.
+>
+> 只安装docker或者docker-ce，无法正常搭建好环境
+
+**Docker Desktop**
+
+1. [Install Docker Desktop on Linux](https://docs.docker.com/desktop/setup/install/linux/).
+
 ### Windows
 
 **WSL**
@@ -183,20 +195,71 @@ The docker command below to start the app must be run inside the WSL terminal. U
 
 ### 官方方式devcontainer
 
-#### 创建dev容器环境
+#### 安装docker compose
+
+##### 命令行docker安装
+
+`docker compose`: Docker CLI 插件，新版，docker-compose集成在 Docker Desktop 或通过 `docker-compose-plugin` 安装
+
+**yum安装 `docker-compose-plugin`**
+
+> yum 安装的docker，使用该方式
 
 ```shell
-cd containers/dev
-./dev.sh
-
-# 代码挂载在/app目录下
-# 执行完成命令后，命令行显示为下面这种形式表示已创建好镜像，并启动容器
-# 第一次执行会创建镜像等耗时较长，后面执行立即返回
-root@76a5c21f8e84:/app# 
+sudo yum install docker-compose-plugin
+# 或 dnf（较新版本）
+sudo dnf install docker-compose-plugin
 ```
 
-- 创建名为openhands:dev的镜像
-- 运行该镜像的容器用于调试，名称为：dev-dev-run-xxx随机数
+**手动安装（通用）：**
+
+```shell
+# 获取最新版本号
+VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
+
+# 下载插件（注意架构：amd64 / arm64）
+mkdir -p ~/.docker/cli-plugins
+curl -SL "https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose
+
+# 赋予执行权限
+chmod +x ~/.docker/cli-plugins/docker-compose
+
+# 举例：https://github.com/docker/compose/releases/download/v2.40.3/docker-compose-linux-x86_64
+```
+
+**验证**
+
+```
+docker compose version
+# 应输出：Docker Compose version v2.x.x
+```
+
+
+
+##### 在 Windows 或 macOS 上使用 **Docker Desktop**
+
+- **Docker Desktop 默认已内置 `docker compose`**（v2+）；
+- 如果报错，说明：
+  - Docker Desktop 版本太旧（< 3.4）
+  - Compose V2 被禁用
+
+解决方法：
+
+1. **升级 Docker Desktop** 到最新版；
+
+2. 打开 Docker Desktop → Settings →General
+
+   - ✅ 勾选 **“Use Docker Compose V2”**
+
+3. 重启 Docker Desktop；
+
+4. 验证：
+
+   ```powershell
+   docker compose version
+   ```
+
+
 
 
 
@@ -227,6 +290,26 @@ https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remo
 
 
 
+#### 创建dev容器环境
+
+```shell
+cd containers/dev
+./dev.sh
+
+# 执行containers/dev/compose.yml的docker-compose的相关内容
+
+# 代码挂载在/app目录下
+# 执行完成命令后，命令行显示为下面这种形式表示已创建好镜像，并启动容器
+# 第一次执行会创建镜像等耗时较长(创建镜像+拉取镜像+安装VsCode Server)，后面执行立即返回(docker-compose up效果)
+root@76a5c21f8e84:/app# 
+```
+
+- 创建名为openhands:dev的镜像
+- 运行该镜像的容器用于调试，名称为：dev-dev-run-xxx随机数
+- 需要下载的运行时镜像
+
+![image-20251123181940484](openhands.assets/image-20251123181940484.png)
+
 
 
 #### VsCode连接容器环境
@@ -235,17 +318,19 @@ https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remo
 
 
 
-
-
 #### 连接容器环境
 
-Openhands选择这个连接调试
+连接运行的容器
 
 ```shell
 Dev Containers: Attach to Running Container...
 ```
 
 ![image-20251122203648081](openhands.assets/image-20251122203648081.png)
+
+安全确认
+
+![image-20251123182356273](openhands.assets/image-20251123182356273.png)
 
 容器选择
 
@@ -254,6 +339,8 @@ Dev Containers: Attach to Running Container...
 ```
 
 ![image-20251122203715766](openhands.assets/image-20251122203715766.png)
+
+> 连接容器，会在容器中下载对应版本的VsCode
 
 
 
@@ -362,24 +449,107 @@ ghcr.io/openhands/agent-server:15f565b-python
 
 ### 社区方式devcontainer
 
+#### 安装docker buildx
+
+**下载docker buildx**
+
+VS Code 的 Dev Containers（尤其是较新版本）默认会尝试使用 `docker buildx` 来构建镜像（因为它支持 BuildKit、多平台构建等高级功能）。
+
+> 创建镜像的时候需要用到docker buildx命令，buildx是docker的插件。
+>
+> `docker buildx` 是 Docker 的一个 **CLI 插件**，并不是所有 Docker 安装都默认包含它。
+
+**下载最新 buildx 插件**
+
+```shell
+mkdir -p ~/.docker/cli-plugins
+
+# 查看当前最新版本
+curl -s https://api.github.com/repos/docker/buildx/releases/latest | grep tag_name | cut -d '"' -f 4 | cut -c 2-
+
+# 安装最新版本
+curl -SL "https://github.com/docker/buildx/releases/latest/download/buildx-v$(curl -s https://api.github.com/repos/docker/buildx/releases/latest | grep tag_name | cut -d '"' -f 4 | cut -c 2-).linux-amd64" -o ~/.docker/cli-plugins/docker-buildx
+```
+
+**验证下载**
+
+```shell
+# 确认插件文件存在且可执行
+ls -l ~/.docker/cli-plugins/docker-buildx -h
+# 正常输出应类似：有执行权限，大小单位为MB，而不是几十KB
+# -rwxr-xr-x 1 root root 68M 11月 23 15:34 /root/.docker/cli-plugins/docker-buildx
+
+# 快速检查是否下载了真实二进制：
+file ~/.docker/cli-plugins/docker-buildx
+# 正确应显示：ELF 64-bit LSB executable, x86-64...
+# 如果显示：ASCII text 或 HTML document → 说明下载的是错误页面！
+```
+
+**验证执行权限**
+
+> 不需要重启docker
+
+```shell
+# 赋予执行权限
+chmod +x ~/.docker/cli-plugins/docker-buildx
+
+# 验证
+docker buildx version
+# 输出类似：github.com/docker/buildx v0.30.1 ...
+
+# 手动验证
+~/.docker/cli-plugins/docker-buildx version
+
+# 测试能否创建 builder
+docker buildx create --use
+
+# 测试 buildx 是否能驱动 BuildKit
+# docker buildx create --name test --use
+# docker buildx inspect --bootstrap
+# 如果 inspect 显示状态为 running，说明兼容性没问题。
+```
+
+
+
+**安装指定版本**
+
+```shell
+curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+```
+
+
+
 #### 打开远程容器环境.devcontainer
 
 > 会用.devcontainer文件夹下的devcontainer.json来配置和启动容器环境。
 >
 > 这种运行OpenHands的方式并非官方支持，而是由社区维护的。
 
-会下载镜像：mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
+会下载镜像：
+
+- `mcr.microsoft.com/devcontainers/python:1-3.12-bullseye`
+- `moby/buildkit:buildx-stable-1`
 
 ![image-20251123083428433](openhands.assets/image-20251123083428433.png)
 
 
 
-1. **用 VS Code 打开包含 `.devcontainer` 的项目根目录**
+1. **用 VS Code 打开项目根目录**
+
+   > 项目根目录必须包含`.devcontainer/devcontainer.json`文件
+
+   **方式一：命令行打开**
 
    ```bash
-   cd /path/to/your/project  # 确保 .devcontainer/devcontainer.json 在此目录下
+   cd /path/to/your/project
+   
+   # 在项目目录中执行，不需要在.devcontainer目录下执行
    code .
    ```
+
+   **方式二：VsCode直接打开项目**
+
+   选择项目根目录
 
 2. **手动触发“在容器中重新打开”**
 
@@ -391,9 +561,26 @@ ghcr.io/openhands/agent-server:15f565b-python
      Dev Containers: Reopen in Container
      ```
 
+     > 第一次执行Reopen in Container，后续执行Attach to Running Container...。
+
    - 回车执行
 
-1. **VS Code 会自动：**
+   - **读取开发容器配置(显示日志)，看是否报错**
+
+   - devcontainer.json文件已存在，点击`继续`。点击`取消`则终止连接容器。
+
+     ![image-20251123165759293](openhands.assets/image-20251123165759293.png)
+
+   - 添加开发容器配置文件：
+
+     ![image-20251123165521568](openhands.assets/image-20251123165521568.png)
+
+     
+
+3. **VS Code 会自动执行以下流程：**
+
+   > 过程中会下载镜像和代码，安装部分工具。**如果有代理会更快。**
+
    - 构建 Docker 镜像（首次较慢）/ 使用指定的镜像(**会拉取基础镜像**)
    - **自动下载并执行每个 Feature 的安装脚本**（通常是 shell 脚本），官方 Feature 库：https://containers.dev/features
    - **按顺序安装指定的工具/服务**
