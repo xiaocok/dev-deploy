@@ -78,19 +78,240 @@ Tested with Ubuntu 22.04.
 
 ### Windows
 
-**WSL**
+#### WSL
 
-1. [Install WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
+1. [安装 WSL | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install)
+
 2. Run `wsl --version` in powershell and confirm `Default Version: 2`.
 
-**Ubuntu (Linux Distribution)**
+   wsl安装
+
+   ```shell
+   wsl --install
+   ```
+
+   查看wsl版本
+
+   > 如果`命令行选项无效: --version`
+
+   - `wsl --version` 是 **较新版本 WSL 内核**（通常随 Windows 11 或 Windows 10 21H2+ 更新推送）才支持的命令。
+
+     ```shell
+     PS C:\Users\Administrator\Desktop> wsl --version
+     WSL 版本: 2.6.1.0
+     内核版本: 6.6.87.2-1
+     WSLg 版本: 1.0.66
+     MSRDC 版本: 1.2.6353
+     Direct3D 版本: 1.611.1-81528511
+     DXCore 版本: 10.0.26100.1-240331-1435.ge-release
+     Windows: 10.0.22621.4317
+     ```
+   
+   - 如果你系统较旧，或 WSL 内核未更新，该命令不存在。
+   
+     升级内核
+   
+     升级wsl
+   
+   - 你可以手动更新 WSL 内核：
+   
+     - 下载地址：https://aka.ms/wsl2kernel
+   
+       [旧版 WSL 的手动安装步骤 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install-manual#step-4---download-the-linux-kernel-update-package)
+   
+     - 安装后即可使用 `wsl --version`
+     
+   - 如果WSL版本较老：管理员运行PowerShell更新WSL
+   
+     > 可能需要科学上网，网络不好可能会卡主
+   
+     ```shell
+     wsl --update
+     ```
+   
+   如果不是2
+   
+   - 则这里设置默认版本为 WSL 2（可选但推荐）：
+   
+     ```shell
+     wsl --set-default-version 2
+     ```
+   
+   - 查看当前已有子系统的版本
+   
+     ```shell
+     wsl -l -v
+     
+       NAME              STATE           VERSION
+     * Ubuntu2404        Running         2
+       docker-desktop    Running         2
+     ```
+   
+   - 切换已有子系统的版本
+   
+     ```shell
+     # 替换为 <Distro> 要更新的 Linux 分发版的名称
+     wsl.exe --set-version <Distro> <1|2>
+     
+     # 将 Ubuntu 分发设置为使用 WSL 2
+     wsl --set-version Ubuntu 2
+     ```
+   
+   查看所有可用的发行版
+   
+   > 需要从https://raw.githubusercontent.com/microsoft/WSL/master/distributions/DistributionInfo.json下载查看，可能需要科学上网。
+   
+   ```shell
+   wsl --list --online
+   
+   PS C:\Users\Administrator\Desktop> wsl -l -o
+   以下是可安装的有效分发的列表。
+   使用“wsl.exe --install <Distro>”安装。
+   
+   NAME                            FRIENDLY NAME
+   AlmaLinux-8                     AlmaLinux OS 8
+   AlmaLinux-9                     AlmaLinux OS 9
+   AlmaLinux-Kitten-10             AlmaLinux OS Kitten 10
+   AlmaLinux-10                    AlmaLinux OS 10
+   Debian                          Debian GNU/Linux
+   FedoraLinux-43                  Fedora Linux 43
+   FedoraLinux-42                  Fedora Linux 42
+   SUSE-Linux-Enterprise-15-SP7    SUSE Linux Enterprise 15 SP7
+   SUSE-Linux-Enterprise-16.0      SUSE Linux Enterprise 16.0
+   Ubuntu                          Ubuntu
+   Ubuntu-24.04                    Ubuntu 24.04 LTS
+   archlinux                       Arch Linux
+   kali-linux                      Kali Linux Rolling
+   openSUSE-Tumbleweed             openSUSE Tumbleweed
+   openSUSE-Leap-16.0              openSUSE Leap 16.0
+   Ubuntu-20.04                    Ubuntu 20.04 LTS
+   Ubuntu-22.04                    Ubuntu 22.04 LTS
+   OracleLinux_7_9                 Oracle Linux 7.9
+   OracleLinux_8_10                Oracle Linux 8.10
+   OracleLinux_9_5                 Oracle Linux 9.5
+   openSUSE-Leap-15.6              openSUSE Leap 15.6
+   SUSE-Linux-Enterprise-15-SP6    SUSE Linux Enterprise 15 SP6
+   
+   # 无法联网的情况
+   无法从“https://raw.githubusercontent.com/microsoft/WSL/master/distributions/DistributionInfo.json”提取列表分发。无法解析服务器的名称或地址
+   错误代码: Wsl/WININET_E_NAME_NOT_RESOLVED
+   ```
+   
+   通过命令行直接安装（推荐）
+   
+   ```shell
+   # 安装最新版
+   wsl --install -d Ubuntu
+   
+   # 安装指定版本
+   wsl --install -d Ubuntu-24.04
+   ```
+   
+   或者 微软商店（Windows Store）安装
+   
+   - 打开链接：https://aka.ms/wslstore
+   
+     [安装 WSL | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install)
+   
+   - 或直接在 **Microsoft Store** 中搜索 “**Ubuntu**”
+   
+   - 点击“安装”（推荐选择 **Ubuntu 22.04 LTS** 或 **Ubuntu 24.04 LTS**）
+   
+     ⚠️ 注意：你需要使用 **普通用户账户**（非 Administrator 账户）登录 Microsoft Store 才能安装应用。如果你当前是以 `Administrator` 身份登录且未绑定微软账户，Store 可能无法正常使用。
+   
+   - 下载`.appx` 或 `.tar.gz` 文件，导入指定路径**（推荐）**
+   
+     [旧版 WSL 的手动安装步骤 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install-manual#step-4---download-the-linux-kernel-update-package)（包含子系统的下载地址）
+   
+     [旧版 WSL 的手动安装步骤 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install-manual#downloading-distributions)（直接下载完整包的发行版）
+   
+     1. **先下载发行版的 Appx 包**（或从已安装的系统导出）：
+   
+        - 可以从 [Microsoft 官方 WSL 发行版页面]([旧版 WSL 的手动安装步骤 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/install-manual#downloading-distributions)) 下载 `.appx` 或 `.tar.gz` 文件。
+        - 或者先正常安装一次，然后用 `wsl --export` 导出。
+   
+     2. **创建目标目录**，例如：
+   
+        ```powershell
+        mkdir D:\WSL\Ubuntu2204
+        ```
+   
+     3. **导入发行版到指定位置**：
+   
+        ```powershell
+        wsl --import Ubuntu2204 D:\WSL\Ubuntu2204 .\ubuntu2204.tar.gz --version 2
+        ```
+   
+     4. **设置默认用户**（可选）： 因为 `--import` 默认以 root 登录，你可以创建 `/etc/wsl.conf` 来设置默认用户：
+   
+        > 子系统内部
+   
+        ```ini
+        [user]
+        default = yourusername
+        ```
+   
+     5. **设置为默认发行版（可选）**：
+   
+        ```powershell
+        wsl --set-default Ubuntu2204
+        ```
+   
+   - 密码
+   
+     1. 通过 Microsoft Store 安装（如 Ubuntu、Debian 等）
+   
+        - **有密码设置流程**。
+        - 第一次启动时，系统会提示你：
+          - 创建一个**普通用户名**（不是 root）
+          - 设置该用户的**密码**
+        - 这个用户默认拥有 `sudo` 权限。
+        - **root 用户默认没有密码**，但你可以通过 `sudo passwd root` 来设置。
+   
+        > 🔒 所以：**普通用户有密码，root 默认无密码（但可通过 sudo 切换）**
+   
+     2. 使用 `wsl --import` 导入 tar 包（比如官方 rootfs）
+   
+        - **默认以 root 用户登录**
+        - **root 用户通常没有设置密码**（即空密码，但 Linux 一般不允许空密码登录）
+        - 因为你直接进入 shell，**不需要输入密码**
+        - 此时：
+          - 你就是 root
+          - 没有其他用户（除非你自己创建）
+          - 如果你运行 `passwd`，可以给 root 设置密码
+          - 但**这个密码在 WSL 中几乎用不到**，因为 WSL 不涉及传统登录
+   
+        > ⚠️ 注意：WSL 启动时不经过 Linux 的 login 或 PAM 验证，所以“密码”主要用于：
+        >
+        > - `sudo`（但 root 不需要 sudo）
+        > - SSH 登录（如果你启用了 SSH 服务）
+        > - 手动切换用户（如 `su alice`）
+   
+        - 如何检查或设置密码
+   
+          创建普通用户并设密码（推荐）：
+   
+          > 然后按提示输入密码（输入时不会显示字符，正常输入回车即可）。
+   
+          ```shell
+          adduser alice
+          ```
+   
+          ✅ 最佳实践建议
+   
+          1. **不要长期用 root**，创建一个普通用户。
+          2. **给普通用户设密码**（虽然日常不用输，但用于 `sudo` 和安全性）。
+          3. 如果你要开启 SSH 服务，**必须设置密码**（或配置密钥）。
+   
+
+#### Ubuntu (Linux Distribution)
 
 1. Install Ubuntu: `wsl --install -d Ubuntu` in PowerShell as Administrator.
 2. Restart computer when prompted.
 3. Open Ubuntu from Start menu to complete setup.
 4. Verify installation: `wsl --list` should show Ubuntu.
 
-**Docker Desktop**
+#### Docker Desktop
 
 1. [Install Docker Desktop on Windows](https://docs.docker.com/desktop/setup/install/windows-install).
 2. Open Docker Desktop, go to `Settings` and confirm the following:
@@ -99,6 +320,10 @@ Tested with Ubuntu 22.04.
 - Resources > WSL Integration: `Enable integration with my default WSL distro` is enabled.
 
 The docker command below to start the app must be run inside the WSL terminal. Use `wsl -d Ubuntu` in PowerShell or search “Ubuntu” in the Start menu to access the Ubuntu terminal.
+
+
+
+
 
 
 
