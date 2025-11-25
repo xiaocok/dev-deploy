@@ -1055,7 +1055,7 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
 
    ```shell
    # 创建虚拟环境
-   python -m venv venv
+   python -m venv .venv
    
    # 激活虚拟环境
    source venv/bin/activate
@@ -1104,7 +1104,7 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
     }
     ```
 
-    
+12. 启动调试：F5，会在容器中下载VS Code的服务端，第一次要耗时较久
 
 
 
