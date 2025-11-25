@@ -318,12 +318,77 @@ Tested with Ubuntu 22.04.
 
 - General: `Use the WSL 2 based engine` is enabled.
 - Resources > WSL Integration: `Enable integration with my default WSL distro` is enabled.
+- Resources > Disk image location 设置镜像位置
 
 The docker command below to start the app must be run inside the WSL terminal. Use `wsl -d Ubuntu` in PowerShell or search “Ubuntu” in the Start menu to access the Ubuntu terminal.
 
 
 
+##### 启动子系统
 
+```shell
+# 列出当前系统
+wsl -l
+
+# 或显示更详细信息（包括状态和版本）
+wsl -l -v
+
+# 启动指定发行版（如 Ubuntu）：
+wsl
+
+# 启动指定发行版（如 Ubuntu）：
+wsl -d Ubuntu
+
+# 设置默认发行版（比如设为 Ubuntu）：
+wsl --set-default Ubuntu
+
+# 带版本号的版本
+wsl -d Ubuntu-22.04
+```
+
+##### 退出子系统
+
+```shell
+# 退出当前终端会话（最常用）
+exit
+
+# 关闭当前 shell 会话。如果这是最后一个会话，WSL 后台实例会在一段时间后自动终止（默认行为）
+Ctrl + D
+
+# 立即终止指定的 WSL 发行版：在 Windows 的 PowerShell 或 CMD 中运行
+wsl --terminate Ubuntu
+
+# 终止所有 WSL 实例
+# 这会关闭所有正在运行的 WSL 发行版，并停止 WSL2 的轻量级虚拟机（适用于 WSL2）。常用于释放资源或解决网络/端口占用问题。
+wsl --shutdown
+```
+
+示例
+
+```shell
+# 查看正在运行的发行版
+wsl -l -v
+
+# 输出示例：
+#   NAME      STATE      VERSION
+# * Ubuntu    Running    2
+
+# 关闭 Ubuntu
+wsl --terminate Ubuntu
+
+# 或者直接全部关闭
+wsl --shutdown
+```
+
+
+
+[Windows 终端概述 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/terminal/)
+
+[Windows 终端安装 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/terminal/install)
+
+下载：
+
+https://github.com/microsoft/terminal/releases
 
 
 
@@ -768,6 +833,8 @@ cat /proc/sys/fs/inotify/max_user_watches
 
 #### 安装docker buildx
 
+> **如果是安装的Docker Desktop，则自带该插件**
+
 **下载docker buildx**
 
 VS Code 的 Dev Containers（尤其是较新版本）默认会尝试使用 `docker buildx` 来构建镜像（因为它支持 BuildKit、多平台构建等高级功能）。
@@ -846,6 +913,9 @@ curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1
 
 - `mcr.microsoft.com/devcontainers/python:1-3.12-bullseye`
 - `moby/buildkit:buildx-stable-1`
+- `dockerfile:1.4 `
+
+> 过程中，会下载源码和工具，科学上网会快一些。
 
 ![image-20251123083428433](openhands.assets/image-20251123083428433.png)
 
@@ -884,16 +954,6 @@ curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1
 
    - **读取开发容器配置(显示日志)，看是否报错**
 
-   - devcontainer.json文件已存在，点击`继续`。点击`取消`则终止连接容器。
-
-     ![image-20251123165759293](openhands.assets/image-20251123165759293.png)
-
-   - 添加开发容器配置文件：
-
-     ![image-20251123165521568](openhands.assets/image-20251123165521568.png)
-
-     
-
 3. **VS Code 会自动执行以下流程：**
 
    > 过程中会下载镜像和代码，安装部分工具。**如果有代理会更快。**
@@ -902,13 +962,33 @@ curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1
    - **自动下载并执行每个 Feature 的安装脚本**（通常是 shell 脚本），官方 Feature 库：https://containers.dev/features
    - **按顺序安装指定的工具/服务**
    - **最终生成一个包含所有所需开发工具的容器环境**（vsc-propject-xxx）
-     - (vsc-openhands-3724fa83fea081c6d98f7b69a59f554d5c405fcad09a5c5a7c23eda45dadcfee-features)
+     - (vsc-openhands-7fca7330b31167c10e49d33c474d7f0dd35963d7da44348e3c60f6689ed9481e-features:latest)
    - 启动容器
    - 挂载项目代码
    - 安装指定的 VS Code 扩展
    - 打开终端（此时已在容器内）
 
 ✅ 成功后，VS Code 左下角状态栏会显示容器名称（如 `Dev Container: YourProject`）。
+
+**部署完成后显示一下信息：Container started**
+
+```shell
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/pl6psfg8c6dxinz7munvv74sn
+[332368 ms] Start: Run: docker events --format {{json .}} --filter event=start
+[332675 ms] Start: Starting container
+[332675 ms] Start: Run: docker run --sig-proxy=false -a STDOUT -a STDERR --mount type=bind,source=d:\python\OpenHands,target=/workspaces/OpenHands,consistency=cached --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker-host.sock --mount type=volume,src=vscode,dst=/vscode -l devcontainer.local_folder=d:\python\OpenHands -l devcontainer.config_file=d:\python\OpenHands\.devcontainer\devcontainer.json -e DOCKER_HOST_ADDR=host.docker.internal --add-host=host.docker.internal:host-gateway --security-opt label=disable --entrypoint /bin/sh vsc-openhands-7fca7330b31167c10e49d33c474d7f0dd35963d7da44348e3c60f6689ed9481e-features -c echo Container started
+Container started
+```
+
+**启动容器的命令**
+
+> 启动完成后，输出echo Container started。
+
+```shell
+docker run --sig-proxy=false -a STDOUT -a STDERR --mount type=bind,source=d:\python\OpenHands,target=/workspaces/OpenHands,consistency=cached --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker-host.sock --mount type=volume,src=vscode,dst=/vscode -l devcontainer.local_folder=d:\python\OpenHands -l devcontainer.config_file=d:\python\OpenHands\.devcontainer\devcontainer.json -e DOCKER_HOST_ADDR=host.docker.internal --add-host=host.docker.internal:host-gateway --security-opt label=disable --entrypoint /bin/sh vsc-openhands-7fca7330b31167c10e49d33c474d7f0dd35963d7da44348e3c60f6689ed9481e-features -c echo Container started
+```
+
+
 
 
 
@@ -947,10 +1027,84 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    Dev Containers: Attach to Running Container...
    ```
 
-1. 从列表中选择对应的容器（通常以项目名或镜像名标识）
-2. VS Code 会 attach 进去，并挂载原项目目录（需路径一致）
+   ![image-20251125231531437](openhands.assets/image-20251125231531437.png)
 
-> ⚠️ 注意：Attach 模式不会自动挂载代码，建议优先使用 “Reopen in Container”。
+   如果容器停止了，可以手动启动容器
+
+   ![image-20251125231637736](openhands.assets/image-20251125231637736.png)
+
+3. 从列表中选择对应的容器（通常以项目名或镜像名标识）
+
+4. VS Code 会 attach 进去，并挂载原项目目录（需路径一致）
+
+   > ⚠️ 注意：Attach 模式不会自动挂载代码，建议优先使用 “Reopen in Container”。
+
+   ![image-20251125232516733](openhands.assets/image-20251125232516733.png)
+
+   ![image-20251125232504282](openhands.assets/image-20251125232504282.png)
+
+5. VsCode打开代码：代理路径，/workspaces/xxxx
+
+6. VS Code安装插件：Python、Python Debugger
+
+7. 选择Python解释器：选择Python 3.12的版本
+
+   ![image-20251125232941979](openhands.assets/image-20251125232941979.png)
+
+8. 创建虚拟环境
+
+   ```shell
+   # 创建虚拟环境
+   python -m venv venv
+   
+   # 激活虚拟环境
+   source venv/bin/activate
+   ```
+
+9. 安装node.js依赖库：科学上网
+
+   ```shell
+   cd frontend
+   npm install
+   
+   # 详细过程（推荐调试用）：显示每个包的下载、解压、链接过程
+   # npm install --loglevel verbose
+   # 或更详细的，极其详细（含网络请求、内部状态）：查看完整调试日志（排查安装失败时很有用）
+   # npm install --loglevel silly
+   
+   npm run build
+   cd ..
+   ```
+
+10. 安装python依赖：科学上网
+
+    ```shell
+    poetry install
+    ```
+
+11. 创建调试
+
+    ```json
+    {
+        // 使用 IntelliSense 了解相关属性。 
+        // 悬停以查看现有属性的描述。
+        // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Python 调试程序: 包含参数的当前文件",
+                "type": "debugpy",
+                "request": "launch",
+                "program": "${workspaceFolder}/openhands/server/__main__.py",
+                "cwd": "${workspaceFolder}",
+                "console": "integratedTerminal",
+                "args": ["--reload", "--port", "3000"]
+            }
+        ]
+    }
+    ```
+
+    
 
 
 
