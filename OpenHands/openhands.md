@@ -1061,16 +1061,27 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    >
    > 使用该版本创建虚拟环境，目前这个只是为了创建虚拟环境。也是可以直接使用当前环境为正式环境。
 
+    **默认快捷键：**
+
+   - **Windows / Linux**：
+      `Ctrl + Shift + P` → 输入 `Python: Select Interpreter` → 回车
+   - **macOS**：
+      `Cmd + Shift + P` → 输入 `Python: Select Interpreter` → 回车
+
+   > ⚠️ VS Code **没有为“选择 Python 环境”分配单一专用快捷键**（如 `Ctrl+K, Ctrl+P` 这类组合），必须通过命令面板（Command Palette）调用。
+
    ![image-20251125232941979](openhands.assets/image-20251125232941979.png)
 
 8. 创建虚拟环境
+
+   >  `Ctrl + Shift + P` → 输入 `Python: Select Interpreter` → 回车。通过这个也可以页面点击**创建虚拟环境**
 
    ```shell
    # 创建虚拟环境
    python -m venv .venv
    
    # 激活虚拟环境
-   source venv/bin/activate
+   source .venv/bin/activate
    ```
 
 9. 选择虚拟环境作为python解释器：
