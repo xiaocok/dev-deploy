@@ -1047,7 +1047,11 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
 
 6. VS Code安装插件：Python、Python Debugger
 
-7. 选择Python解释器：选择Python 3.12的版本
+7. 选择Python解释器：
+
+   > 选择Python 3.12的版本
+   >
+   > 使用该版本创建虚拟环境，目前这个只是为了创建虚拟环境。也是可以直接使用当前环境为正式环境。
 
    ![image-20251125232941979](openhands.assets/image-20251125232941979.png)
 
@@ -1061,7 +1065,13 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    source venv/bin/activate
    ```
 
-9. 安装node.js依赖库：科学上网
+9. 选择虚拟环境作为python解释器：
+
+   > 选择刚才创建的虚拟环境.venv/bin/python。会将依赖包下载至该环境
+
+   ![image-20251126111400034](openhands.assets/image-20251126111400034.png)
+
+10. 安装node.js依赖库：科学上网
 
    ```shell
    cd frontend
@@ -1076,13 +1086,13 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    cd ..
    ```
 
-10. 安装python依赖：科学上网
+11. 安装python依赖：科学上网
 
     ```shell
     poetry install
     ```
 
-11. 创建调试
+12. 创建调试
 
     ```json
     {
@@ -1104,7 +1114,7 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
     }
     ```
 
-12. 启动调试：F5，会在容器中下载VS Code的服务端，第一次要耗时较久
+13. 启动调试：F5，会在容器中下载VS Code的服务端，第一次要耗时较久
 
 
 
