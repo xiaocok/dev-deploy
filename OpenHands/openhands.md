@@ -948,7 +948,15 @@ curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1
      Dev Containers: Reopen in Container
      ```
 
-     > 第一次执行Reopen in Container，后续执行Attach to Running Container...。
+     > 第一次执行**Reopen in Container**：创建镜像、启动容器、容器安装VS Code Server、连接容器。
+     >
+     > 
+     >
+     > 后续次执行**Reopen in Container**：启动容器(如果容器停止了)、连接容器。（后续支持不会重新创建镜像）
+     >
+     > 或者
+     >
+     > 后续执行**Attach to Running Container...**：链接容器(如果容器停止了，需要用户执行docker start xxx启动容器)。
 
    - 回车执行
 
