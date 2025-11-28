@@ -322,6 +322,23 @@ Tested with Ubuntu 22.04.
 
 The docker command below to start the app must be run inside the WSL terminal. Use `wsl -d Ubuntu` in PowerShell or search “Ubuntu” in the Start menu to access the Ubuntu terminal.
 
+**Docker关闭IPv6**
+
+Settings -> Docker Engine
+
+```shell
+vi /etc/docker/daemon.json
+
+{
+  "ipv6": false,
+  "experimental": false,
+}
+```
+
+**WSL其他设置**
+
+https://learn.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig
+
 
 
 ##### 启动子系统
@@ -582,6 +599,29 @@ https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remo
 
 #### 创建dev容器环境
 
+如果已有镜像，只需要另外的环境复用，则先导入2个镜像再执行后续流程
+
+```shell
+openhands:dev
+
+ghcr.io/openhands/agent-server:15f565b-python
+```
+
+
+
+Windows
+
+```shell
+# 开启wsl子系统
+wsl -D Ubuntu
+
+# 移动至目录下执行：脚步需要再Ubuntu中执行。Windows不能执行shell脚本
+cd /mnt/d/python/OpenHands/containers/dev
+./dev.sh
+```
+
+Linux / MacOS
+
 ```shell
 cd containers/dev
 ./dev.sh
@@ -595,10 +635,47 @@ root@76a5c21f8e84:/app#
 ```
 
 - 创建名为openhands:dev的镜像
+
 - 运行该镜像的容器用于调试，名称为：dev-dev-run-xxx随机数
+
 - 需要下载的运行时镜像
 
+- VsCode Server下载地址
+
+  ```shell
+  https://update.code.visualstudio.com/commit:{commit}/server-linux-x64/stable
+  
+  https://update.code.visualstudio.com/commit:bf9252a2fb45be6893dd8870c0bf37e2e1766d61/server-linux-x64/stable
+  ```
+
 ![image-20251123181940484](openhands.assets/image-20251123181940484.png)
+
+##### 沙箱以host网络模式运行
+
+在 **host 模式**下，容器**不会创建自己的网络命名空间**，而是**直接共享宿主机的网络栈**。这意味着：
+
+- 容器内的进程**直接使用宿主机的 IP 地址和端口**；
+- 不再有 Docker 的网络隔离（如 bridge、NAT、端口映射等）；
+- 容器内监听的 `0.0.0.0:8080` 就等于宿主机的 `0.0.0.0:8080`，无需 `-p 8080:8080` 映射。
+
+1. Dev Containers
+
+   ![image-20251127214206405](openhands.assets/image-20251127214206405.png)
+
+2. 通过环境变量设置
+
+   ```bash
+   export SANDBOX_USE_HOST_NETWORK=true
+   ```
+
+3. 配置文件添加：config.toml
+
+   ```toml
+   [sandbox]
+   use_host_network = true
+   ```
+
+
 
 
 
@@ -646,21 +723,27 @@ Dev Containers: Attach to Running Container...
 
 
 
-**选择python环境**
-
-/root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12
+##### <span style="color:red">**选择python环境**</span>
 
 > 这里有全套的python环境
 
-激活环境
+ **默认快捷键：**
+
+- **Windows / Linux**：
+  `Ctrl + Shift + P` → 输入 `Python: Select Interpreter` → 回车
+- **macOS**：
+  `Cmd + Shift + P` → 输入 `Python: Select Interpreter` → 回车
 
 ```shell
+/root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12
+
+# 激活环境
 root@76a5c21f8e84:/app# source /root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12/bin/activate
 ```
 
 
 
-**VsCode安装插件**
+##### **VsCode安装插件**
 
 > python开发调试插件
 
@@ -769,9 +852,21 @@ sudo systemctl restart docker
 
 
 
-打开浏览器访问
+**MacOS/Linux:**
 
-http://127.0.0.1:3000
+​	打开浏览器访问 http://127.0.0.1:3000
+
+**Windwos + WSL:**
+
+不能访问127.0.0.1，是本机回环地址。启动沙箱后，需要前端与沙箱通信。无法访问动态分配的端口。需要知道wsl中的ubuntu的net网络转换地址
+
+```
+cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
+
+127.0.0.11
+```
+
+打开浏览器访问 http://127.0.0.11:3000
 
 
 
@@ -923,7 +1018,7 @@ curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1
 
 1. **用 VS Code 打开项目根目录**
 
-   > 项目根目录必须包含`.devcontainer/devcontainer.json`文件
+   <span style="color:red">**项目根目录必须包含`.devcontainer/devcontainer.json`文件**</span>
 
    **方式一：命令行打开**
 
@@ -962,6 +1057,14 @@ curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1
 
    - **读取开发容器配置(显示日志)，看是否报错**
 
+   - VsCode Server下载地址（会自动下载）
+
+     ```shell
+     https://update.code.visualstudio.com/commit:{commit}/server-linux-x64/stable
+     
+     https://update.code.visualstudio.com/commit:bf9252a2fb45be6893dd8870c0bf37e2e1766d61/server-linux-x64/stable
+     ```
+
 3. **VS Code 会自动执行以下流程：**
 
    > 过程中会下载镜像和代码，安装部分工具。**如果有代理会更快。**
@@ -996,7 +1099,14 @@ Container started
 docker run --sig-proxy=false -a STDOUT -a STDERR --mount type=bind,source=d:\python\OpenHands,target=/workspaces/OpenHands,consistency=cached --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker-host.sock --mount type=volume,src=vscode,dst=/vscode -l devcontainer.local_folder=d:\python\OpenHands -l devcontainer.config_file=d:\python\OpenHands\.devcontainer\devcontainer.json -e DOCKER_HOST_ADDR=host.docker.internal --add-host=host.docker.internal:host-gateway --security-opt label=disable --entrypoint /bin/sh vsc-openhands-7fca7330b31167c10e49d33c474d7f0dd35963d7da44348e3c60f6689ed9481e-features -c echo Container started
 ```
 
+<span style="color:red">**Python的虚拟机环境**</span>
 
+> 进入容器后，选择这个虚拟环境
+
+```shell
+Creating virtualenv openhands-ai-QLt0qIPP-py3.12 in /home/vscode/.cache/pypoetry/virtualenvs
+Using virtualenv: /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12
+```
 
 
 
@@ -1057,9 +1167,16 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
 
 7. 选择Python解释器：
 
-   > 选择Python 3.12的版本
+   <span style="color:red">**Python的虚拟机环境**</span>
+
+   > 进入容器后，选择这个虚拟环境
    >
-   > 使用该版本创建虚拟环境，目前这个只是为了创建虚拟环境。也是可以直接使用当前环境为正式环境。
+   > 第一次进入容器时，会自动创建虚拟环境如下，并且会执行`poetry install`安装相关依赖
+
+   ```shell
+   Creating virtualenv openhands-ai-QLt0qIPP-py3.12 in /home/vscode/.cache/pypoetry/virtualenvs
+   Using virtualenv: /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12
+   ```
 
     **默认快捷键：**
 
@@ -1070,27 +1187,18 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
 
    > ⚠️ VS Code **没有为“选择 Python 环境”分配单一专用快捷键**（如 `Ctrl+K, Ctrl+P` 这类组合），必须通过命令面板（Command Palette）调用。
 
-   ![image-20251125232941979](openhands.assets/image-20251125232941979.png)
-
-8. 创建虚拟环境
-
-   >  `Ctrl + Shift + P` → 输入 `Python: Select Interpreter` → 回车。通过这个也可以页面点击**创建虚拟环境**
+   ![image-20251128204406576](openhands.assets/image-20251128204406576.png)
 
    ```shell
-   # 创建虚拟环境
-   python -m venv .venv
+   # 激活环境
+   source /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12/bin/activate
    
-   # 激活虚拟环境
-   source .venv/bin/activate
+   
+   vscode ➜ /workspaces/OpenHands (main) $ source /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12/bin/activate
+   (openhands-ai-py3.12) vscode ➜ /workspaces/OpenHands (main)
    ```
 
-9. 选择虚拟环境作为python解释器：
-
-   > 选择刚才创建的虚拟环境.venv/bin/python。会将依赖包下载至该环境
-
-   ![image-20251126111400034](openhands.assets/image-20251126111400034.png)
-
-10. 安装node.js依赖库：科学上网
+8. 安装node.js依赖库：科学上网
 
    ```shell
    cd frontend
@@ -1101,39 +1209,42 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    # 或更详细的，极其详细（含网络请求、内部状态）：查看完整调试日志（排查安装失败时很有用）
    # npm install --loglevel silly
    
+   # 输出info ok 即完成
+   # Run `npm audit` for details.
+   # npm verbose cwd /workspaces/OpenHands/frontend
+   # npm verbose os Linux 6.6.87.2-microsoft-standard-WSL2
+   # npm verbose node v24.11.1
+   # npm verbose npm  v11.6.2
+   # npm verbose exit 0
+   # npm info ok
+   
    npm run build
    cd ..
    ```
 
-11. 安装python依赖：科学上网
+9. 创建调试
 
-    ```shell
-    poetry install
-    ```
+   ```shell
+   {
+       // 使用 IntelliSense 了解相关属性。 
+       // 悬停以查看现有属性的描述。
+       // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+       "version": "0.2.0",
+       "configurations": [
+           {
+               "name": "Python 调试程序: 包含参数的当前文件",
+               "type": "debugpy",
+               "request": "launch",
+               "program": "${workspaceFolder}/openhands/server/__main__.py",
+               "cwd": "${workspaceFolder}",
+               "console": "integratedTerminal",
+               "args": ["--reload", "--port", "3000"]
+           }
+       ]
+   }
+   ```
 
-12. 创建调试
-
-    ```json
-    {
-        // 使用 IntelliSense 了解相关属性。 
-        // 悬停以查看现有属性的描述。
-        // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
-        "version": "0.2.0",
-        "configurations": [
-            {
-                "name": "Python 调试程序: 包含参数的当前文件",
-                "type": "debugpy",
-                "request": "launch",
-                "program": "${workspaceFolder}/openhands/server/__main__.py",
-                "cwd": "${workspaceFolder}",
-                "console": "integratedTerminal",
-                "args": ["--reload", "--port", "3000"]
-            }
-        ]
-    }
-    ```
-
-13. 启动调试：F5，会在容器中下载VS Code的服务端，第一次要耗时较久
+10. 启动调试：F5，会在容器中下载VS Code的服务端，第一次要耗时较久
 
 
 
