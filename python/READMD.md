@@ -223,6 +223,7 @@ conda create --name py37 python=3.7 numpy pandas
 
 ```shell
 source activate py37
+conda activate py37
 ```
 
 **退出环境**
@@ -338,22 +339,22 @@ conda remove -n <env_name> <package_name>
 
 #### 命令参考
 
-| 命令                                                        | 说明                   |
-| ----------------------------------------------------------- | ---------------------- |
-| `conda –V`                                                  | 查看conda版本          |
-| `conda –h`                                                  | 查看conda帮助          |
-| `conda update conda`                                        | 更新conda              |
-| `conda create --name <env_name> <package_names>`            | 使用conda创建新的环境  |
-| `source activate <env_name>`                                | 激活创建的环境         |
-| `conda info --envs`                                         | 显示已创建的环境       |
-| `conda create --name <new_env_name> --clone <old_env_name>` | 复制环境               |
-| `deactivate <env_name>`                                     | 退出环境               |
-| `conda remove --name <env_name> --all`                      | 删除环境               |
-| `conda install --name <env_name> <package_name>`            | 在指定环境中安装包     |
-| `conda list`                                                | 列出已安装的包         |
-| `conda update <package_name>`                               | 更新当前环境中的安装包 |
-| `conda remove <package_name>`                               | 移除当前环境中的安装包 |
-| `conda remove -n <env_name> <package_name>`                 | 移除指定环境中的安装包 |
+| 命令                                                         | 说明                   |
+| ------------------------------------------------------------ | ---------------------- |
+| `conda –V`                                                   | 查看conda版本          |
+| `conda –h`                                                   | 查看conda帮助          |
+| `conda update conda`                                         | 更新conda              |
+| `conda create --name <env_name> <package_names>`             | 使用conda创建新的环境  |
+| `source activate <env_name>`<br/>`conda activate <env_name>` | 激活创建的环境         |
+| `conda info --envs`                                          | 显示已创建的环境       |
+| `conda create --name <new_env_name> --clone <old_env_name>`  | 复制环境               |
+| `deactivate <env_name>`                                      | 退出环境               |
+| `conda remove --name <env_name> --all`                       | 删除环境               |
+| `conda install --name <env_name> <package_name>`             | 在指定环境中安装包     |
+| `conda list`                                                 | 列出已安装的包         |
+| `conda update <package_name>`                                | 更新当前环境中的安装包 |
+| `conda remove <package_name>`                                | 移除当前环境中的安装包 |
+| `conda remove -n <env_name> <package_name>`                  | 移除指定环境中的安装包 |
 
 
 
