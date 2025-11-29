@@ -137,6 +137,10 @@ pyenv global 3.12.0
 
 [Download Success 2026 | Anaconda](https://www.anaconda.com/download/success)
 
+[Releases · conda/conda](https://github.com/conda/conda/releases)
+
+[conda | 帮助文档](https://scc.bupt.edu.cn/docs/zh/app/conda)
+
 
 
 Windows图形界面：https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
@@ -148,6 +152,153 @@ MacOS命令行：https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x8
 Linux命令行：https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 
 
+
+### 超算平台专用镜像站
+
+添加源
+
+[scc-mirror | 帮助文档](https://scc.bupt.edu.cn/docs/zh/manual/scc-mirror)
+
+### 安装
+
+**通用路径**
+
+Miniconda在路径：`/opt/app/anaconda3/Miniconda3-latest-Linux-x86_64.sh`
+
+确定安装路径：/opt/app/anaconda3
+
+写入环境变量
+
+```shell
+# 编辑
+vim ~/.bashrc
+
+# 添加PATH
+mkdir -p /opt/app/anaconda3/
+export PATH=/opt/app/anaconda3/bin:$PATH
+
+# 生效
+source ~/.bashrc
+
+# 将安装包移动至：/opt/app/anaconda3/Miniconda3-latest-Linux-x86_64.sh
+# 执行安装
+cd /opt/app/anaconda3
+./Miniconda3-latest-Linux-x86_64.sh
+```
+
+**默认路径**
+
+> 默认安装路径为：~/miniconda3 
+
+```shell
+# 直接执行安装，无论安装包在哪里
+./Miniconda3-latest-Linux-x86_64.sh
+
+# 添加环境变量
+vim ~/.bashrc
+export PATH=~/anaconda3/bin:$PATH
+
+# 生效
+source ~/.bashrc
+```
+
+### **使用**
+
+#### 环境管理
+
+**创建新环境**
+
+```shell
+conda create --name <env_name> <package_names>
+
+
+conda create --name py37 python=3.7 numpy pandas
+```
+
+**切换环境**
+
+```shell
+source activate py37
+```
+
+**退出环境**
+
+```shell
+conda deactivate
+```
+
+退出环境后，会切换至`base`环境
+
+**复制环境**
+
+```shell
+conda create --name <new_env_name> --clone <old_env_name>
+```
+
+**显示环境**
+
+```shell
+conda info --envs
+```
+
+**删除环境**
+
+```shell
+conda remove --name <env_name> --all
+```
+
+#### 包管理
+
+**获取当前环境中已安装的包信息**
+
+```shell
+conda list
+```
+
+**在指定环境中安装包**
+
+```shell
+conda install --name <env_name> <package_name>
+```
+
+注意：
+
+1. `<env_name>` 即将包安装的指定环境名。环境名两边不加尖括号“<>”。
+2. `<package_name>` 即要安装的包名。包名两边不加尖括号“<>”。
+3. 不加`-name <env_name>`，则安装到当前所在的环境。
+
+**卸载包**
+
+```shell
+conda remove -n <env_name> <package_name>
+```
+
+#### pip
+
+相比Anaconda，`pip`可以安装的包更多。用户可以先切换到所需环境，再在环境中执行`pip install <package_name>`。
+
+输入`conda -v` 查看Conda版本确认已安装完成。
+
+
+
+#### 命令参考
+
+| 命令                                                        | 说明                   |
+| ----------------------------------------------------------- | ---------------------- |
+| `conda –V`                                                  | 查看conda版本          |
+| `conda –h`                                                  | 查看conda帮助          |
+| `conda update conda`                                        | 更新conda              |
+| `conda create --name <env_name> <package_names>`            | 使用conda创建新的环境  |
+| `source activate <env_name>`                                | 激活创建的环境         |
+| `conda info --envs`                                         | 显示已创建的环境       |
+| `conda create --name <new_env_name> --clone <old_env_name>` | 复制环境               |
+| `deactivate <env_name>`                                     | 退出环境               |
+| `conda remove --name <env_name> --all`                      | 删除环境               |
+| `conda install --name <env_name> <package_name>`            | 在指定环境中安装包     |
+| `conda list`                                                | 列出已安装的包         |
+| `conda update <package_name>`                               | 更新当前环境中的安装包 |
+| `conda remove <package_name>`                               | 移除当前环境中的安装包 |
+| `conda remove -n <env_name> <package_name>`                 | 移除指定环境中的安装包 |
 
 
 
