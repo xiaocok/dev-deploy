@@ -302,6 +302,122 @@ Tested with Ubuntu 22.04.
           1. **不要长期用 root**，创建一个普通用户。
           2. **给普通用户设密码**（虽然日常不用输，但用于 `sudo` 和安全性）。
           3. 如果你要开启 SSH 服务，**必须设置密码**（或配置密钥）。
+     
+   - **WSL其他设置**
+   
+     https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#configure-global-options-with-wslconfig
+   
+     https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#wslconf
+     
+     https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#wslconfig
+     
+     > `wsl.conf` 用于根据 WSL 发行版应用设置，`.wslconfig` 用于将全局设置应用于 WSL
+     
+     | 方面  | `.wslconfig`                                                 | `wsl.conf`                                                   |
+     | :---- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+     | Scope | 适用于所有 WSL 的常规设置                                    | 仅限 WSL 分发的设置                                          |
+     | 配置  | WSL 中的功能启用、为 WSL 2 提供支持的虚拟机设置（RAM、要启动的内核、CPU 数等） | WSL 中的分发设置，例如启动选项、DrvFs 自动装载、网络、与 Windows 系统的互作性、系统使用情况和默认用户 |
+     | 位置  | `%UserProfile%\.wslconfig`，在 WSL 分发之外                  | `/etc/wsl.conf`，而在 WSL 分发中                             |
+     
+     设置完成后需要重启
+     
+     ```shell
+     # 查看全部运行的
+     wsl --list --running
+     
+     # 关闭指定的
+     wsl --terminate <distroName>
+     ```
+     
+     
+     
+     wsl.conf
+   
+     > /etc/wsl.conf
+   
+     ```shell
+     vi /etc/wsl.conf
+     
+     # 启用 systemd
+     [boot]
+     systemd=true
+     
+     # 验证是否生效
+     # systemctl list-unit-files --type=service
+     
+     # 启动root权限
+     [user]
+     default=root
+     ```
+     
+     .wslconfig
+     
+     > C:\Users\<UserName>\.wslconfig
+     
+     建议直接在 WSL 设置中修改 WSL 配置，而不是手动编辑 .wslconfig 文件。 可以在“开始”菜单中找到 WSL 设置。 ![适用于 Linux 设置的 Windows 子系统](openhands.assets/wsl-settings.png)
+     
+     网络模式：Mirrored
+     
+     ![image-20251129081411699](openhands.assets/image-20251129081411699.png)
+     
+     **总结对比**
+     
+     | 模式        | 是否用户可选 | IP 特点               | 外部可访问性 | 支持版本          |
+     | ----------- | ------------ | --------------------- | ------------ | ----------------- |
+     | NAT         | 否（默认）   | 私有 IP（每次可能变） | 需端口转发   | WSL2 全版本       |
+     | Mirrored    | 是（实验性） | **与主机相同**        | 直接可访问   | Win11 22H2+       |
+     | VirtioProxy | 否（底层）   | —                     | —            | WSL2 内部机制     |
+     | None        | 间接支持     | 无网络                | 不可访问     | 特殊配置/故障情况 |
+     
+     **localhost转发**
+     
+     WSL2 运行在一个轻量级的 Hyper-V 虚拟机中，拥有自己的虚拟网络接口和私有 IP 地址（如 `172.28.123.45`）。
+     
+     **localhost 转发** 是指：当你在 Windows 上访问 `localhost:端口` 时，如果该端口在 WSL2 中有服务正在监听，Windows 会自动将这个请求**透明地转发**到 WSL2 虚拟机中的对应端口。
+     
+     - WSL2 启动时，会与 Windows 主机建立一个 **Virtio 网络通道**。
+     - Windows 监听本地回环地址（`127.0.0.1`）上的 TCP 连接。
+     - 当检测到某个端口在 WSL2 中处于 **LISTEN** 状态，Windows 会动态创建一个 **端口代理（port proxy）**，将 `127.0.0.1:端口` 的流量转发到 WSL2 的虚拟 IP 对应端口。
+     - 这个过程对用户**完全透明**，无需手动配置 `netsh portproxy`。
+     
+     **查看 WSL2 的实际 IP**（用于手动访问）
+     
+     ```shell
+     hostname -I
+     # 输出如：172.28.123.45
+     ```
+     
+   - wsl关闭ipv6
+   
+     ```shell
+     vi /etc/sysctl.conf
+     
+     # 在文件末尾添加以下内容
+     # Disable IPv6
+     net.ipv6.conf.all.disable_ipv6 = 1
+     net.ipv6.conf.default.disable_ipv6 = 1
+     net.ipv6.conf.lo.disable_ipv6 = 1
+     
+     # 立即应用配置
+     sudo sysctl -p
+     ```
+   
+     验证 IPv6 是否已禁用
+   
+     ```shell
+     cat /proc/sys/net/ipv6/conf/all/disable_ipv6
+     ```
+   
+     - 输出 1 表示已禁用
+     - 输出 0 表示仍启用
+   
+     也可以用
+   
+     ```shell
+     ip a
+     ```
+   
+     查看是否还有 inet6 地址
    
 
 #### Ubuntu (Linux Distribution)
@@ -334,10 +450,6 @@ vi /etc/docker/daemon.json
   "experimental": false,
 }
 ```
-
-**WSL其他设置**
-
-https://learn.microsoft.com/en-us/windows/wsl/wsl-config#configure-global-options-with-wslconfig
 
 
 
@@ -609,14 +721,20 @@ ghcr.io/openhands/agent-server:15f565b-python
 
 
 
+**VS Code打开代码主目录：因为需要挂载文件**
+
+
+
 Windows
 
+> Windows不能执行shell脚本，脚步需要在Ubuntu中执行。需要先启动子系统，再执行。
+
 ```shell
-# 开启wsl子系统
+# 在VS Code的终端执行命令：开启wsl子系统，并进入ubuntu子系统
 wsl -D Ubuntu
 
-# 移动至目录下执行：脚步需要再Ubuntu中执行。Windows不能执行shell脚本
-cd /mnt/d/python/OpenHands/containers/dev
+# 进入子系统后，则可以执行下面的命令
+cd containers/dev
 ./dev.sh
 ```
 
@@ -632,6 +750,17 @@ cd containers/dev
 # 执行完成命令后，命令行显示为下面这种形式表示已创建好镜像，并启动容器
 # 第一次执行会创建镜像等耗时较长(创建镜像+拉取镜像+安装VsCode Server)，后面执行立即返回(docker-compose up效果)
 root@76a5c21f8e84:/app# 
+```
+
+**如果报错：**删除/root/.gitconfig文件夹
+
+```shell
+root@DESKTOP-0ANSR1G:/mnt/d/python/OpenHands/containers/dev# ./dev.sh
+warning: unable to access '/root/.gitconfig': Is a directory
+warning: unable to access '/root/.gitconfig': Is a directory
+fatal: unknown error occurred while reading the configuration files
+./dev.sh: line 29: cd: /containers/dev/: No such file or directory
+root@DESKTOP-0ANSR1G:/mnt/d/python/OpenHands/containers/dev# rm -rf /root/.gitconfig
 ```
 
 - 创建名为openhands:dev的镜像
@@ -674,6 +803,10 @@ root@76a5c21f8e84:/app#
    [sandbox]
    use_host_network = true
    ```
+
+**每次退出谁删除dev容器：**如果希望保留，删除这个--rm
+
+![image-20251129091250796](openhands.assets/image-20251129091250796.png)
 
 
 
@@ -850,29 +983,21 @@ sudo systemctl restart docker
 
 > 设置好断点，F5启动调试
 
+1. 打开浏览器访问 http://127.0.0.1:3000
 
+2. 或者查看给容器分配的转发地址：在容器内执行，不是虚拟机
 
-**MacOS/Linux:**
+   ```shell
+   cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
+   
+   127.0.0.11
+   ```
 
-​	打开浏览器访问 http://127.0.0.1:3000
-
-**Windwos + WSL:**
-
-不能访问127.0.0.1，是本机回环地址。启动沙箱后，需要前端与沙箱通信。无法访问动态分配的端口。需要知道wsl中的ubuntu的net网络转换地址
-
-```
-cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
-
-127.0.0.11
-```
-
-打开浏览器访问 http://127.0.0.11:3000
+   打开浏览器访问 http://127.0.0.11:3000
 
 
 
 配置大模型信息，创建新的对话
-
-
 
 1. 会下载镜像，镜像根据从github下载的代码版本有关
 
