@@ -521,6 +521,188 @@ https://github.com/microsoft/terminal/releases
 
 
 
+### WSL使用代理
+
+**代理工具开启：允许局域网连接接入7890端口**
+
+> Net网络模式需要设置，如果是Mirrored模式，不需要设置
+
+#### 通用模式
+
+**获取Windows在WSL中的ip**
+
+```shell
+cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
+
+# 输出
+172.28.128.1
+```
+
+> 这个 `172.x.x.1` 就是 **Windows 主机在 WSL2 虚拟网络中的网关 IP**，所有发往该 IP 的流量都会被转发到 Windows。
+
+**在 WSL2 中设置代理环境变量**
+
+> 假设你的 Windows 代理端口是 `7890`（常见于 Clash），在 WSL2 中执行
+
+```shell
+# 设置临时代理（当前会话有效）
+export http_proxy="http://172.28.128.1:7890"
+export https_proxy="http://172.28.128.1:7890"
+export no_proxy="localhost,127.0.0.1,::1"
+```
+
+执行相关代理操作
+
+
+
+**永久生效（写入 shell 配置文件）**
+
+如果你用的是 bash（默认）：
+
+```shell
+echo 'export host_ip=$(cat /etc/resolv.conf | grep nameserver | awk \'{print $2}\')' >> ~/.bashrc
+echo 'export http_proxy="http://$host_ip:7890"' >> ~/.bashrc
+echo 'export https_proxy="http://$host_ip:7890"' >> ~/.bashrc
+echo 'export no_proxy="localhost,127.0.0.1,::1"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+如果你用的是 zsh：
+
+```shell
+echo 'export host_ip=$(cat /etc/resolv.conf | grep nameserver | awk '\''{print $2}'\'')' >> ~/.zshrc
+echo 'export http_proxy="http://$host_ip:7890"' >> ~/.zshrc
+echo 'export https_proxy="http://$host_ip:7890"' >> ~/.zshrc
+echo 'export no_proxy="localhost,127.0.0.1,::1"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+> 💡 这样每次启动 WSL2 终端都会自动设置代理。
+
+**✅ 验证代理是否生效**
+
+> 在 WSL2 中测试：
+
+```shell
+curl -I https://www.google.com
+```
+
+如果返回 HTTP 200 或 301，说明代理工作正常。
+
+也可以测试 IP：
+
+```shell
+curl ipinfo.io
+```
+
+看是否显示代理出口 IP。
+
+
+
+#### 使用过VPN的情况
+
+```shell
+cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
+
+# 输出为：
+10.xxx.xxx.xxx
+```
+
+在标准 WSL2 环境中，`/etc/resolv.conf` 的 `nameserver` 通常是 `172.x.x.1`（Windows 主机在 WSL2 虚拟网络中的网关）。
+
+表明主机处于企业网络、校园网或使用了自定义 DNS/代理网关（如某些安全软件、虚拟网卡、或公司 IT 策略）。
+
+Windows 启用了“DNS over HTTPS (DoH)”或组策略强制 DNS：某些策略会覆盖 WSL2 的默认 DNS 行为。
+
+**查看 WSL2 的默认路由**
+
+在 WSL2 中运行：
+
+```shell
+ip route show default
+
+# 输出
+default via 172.23.192.1 dev eth0 proto kernel
+
+# 从默认路由提取
+ip route show default | awk '{print $3}'
+```
+
+> ✅ 这明确显示：**所有非本地流量都通过 `172.23.192.1` 转发到 Windows**。**Windows 主机在 WSL2 虚拟网络中的 IP 地址是 `172.23.192.1`**
+
+**✅ 正确结论：访问 Windows 服务请用 `172.23.192.1`**
+
+- 如果你在 Windows 上运行了代理（如 Clash、v2ray，默认监听 `127.0.0.1:7890`），
+- 那么在 WSL2 中应使用：`http://172.23.192.1:7890`
+
+
+
+**测试能否访问 Windows 上的代理**
+
+**✅ 验证代理是否生效**
+
+```shell
+curl -v http://172.23.192.1:7890
+```
+
+如果返回类似 `HTTP/1.1 400 Bad Request`（因为代理期望 CONNECT 或 HTTPS），说明连接成功。
+
+或者
+
+> 在 WSL2 中测试：
+
+```shell
+curl -I https://www.google.com
+```
+
+如果返回 HTTP 200 或 301，说明代理工作正常。
+
+也可以测试 IP：
+
+```shell
+curl ipinfo.io
+```
+
+看是否显示代理出口 IP。
+
+
+
+**🛠 推荐：自动获取正确的 Windows 主机 IP**
+
+在脚本中，**优先使用默认网关 IP**（更可靠）：
+
+测试：
+
+```bash
+# 获取 Windows 主机在 WSL2 中的真实 IP（用于访问服务）
+WIN_HOST=$(ip route show default | awk '{print $3}')
+echo "Windows host IP: $WIN_HOST"
+
+# 设置代理（假设端口 7890）
+export http_proxy="http://$WIN_HOST:7890"
+export https_proxy="http://$WIN_HOST:7890"
+export no_proxy="localhost,127.0.0.1,::1"
+```
+
+存入启动脚本
+
+```shell
+echo 'WIN_HOST=$(ip route show default | awk \'{print $3}\')' >> ~/.bashrc
+
+echo 'export http_proxy="http://$WIN_HOST:7890"'  >> ~/.bashrc
+echo 'export https_proxy="http://$WIN_HOST:7890"'  >> ~/.bashrc
+echo 'export no_proxy="localhost,127.0.0.1,::1"'  >> ~/.bashrc
+
+# 生效
+source ~/.bashrc
+```
+
+执行代理相关操作
+
+> ✅ 这比从 `/etc/resolv.conf` 读取更准确，尤其在企业网络中。
+
+
+
 ### 代码依赖
 
 安装python：
