@@ -521,13 +521,15 @@ https://github.com/microsoft/terminal/releases
 
 
 
-### WSL使用代理
+#### 使用代理
+
+##### WSL使用代理
 
 **代理工具开启：允许局域网连接接入7890端口**
 
 > Net网络模式需要设置，如果是Mirrored模式，不需要设置
 
-#### 通用模式
+###### 通用模式
 
 **获取Windows在WSL中的ip**
 
@@ -599,7 +601,7 @@ curl ipinfo.io
 
 
 
-#### 使用过VPN的情况
+###### 使用过VPN的情况
 
 ```shell
 cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
@@ -700,6 +702,81 @@ source ~/.bashrc
 执行代理相关操作
 
 > ✅ 这比从 `/etc/resolv.conf` 读取更准确，尤其在企业网络中。
+
+
+
+##### Docker Desktop 使用代理
+
+1. **找到IP**：例如172.23.192.1
+
+2. **打开 Docker Desktop 设置**
+
+   - 右键任务栏 Docker 图标 → **Settings**
+   - 或打开 Docker Desktop 应用 → 左下角 **⚙️ Settings**
+
+3. **配置代理**
+
+   左侧选择 **Resources → Proxies**
+
+   填写：
+
+   | 字段            | 值                         |
+   | --------------- | -------------------------- |
+   | **HTTP proxy**  | `http://172.23.192.1:7890` |
+   | **HTTPS proxy** | `http://172.23.192.1:7890` |
+
+   **启动容器时传入环境变量**
+
+   ```shell
+   docker run -it \
+     --env http_proxy=http://172.23.192.1:7890 \
+     --env https_proxy=http://172.23.192.1:7890 \
+     alpine sh
+   ```
+
+   **在 `docker-compose.yml` 中配置**
+
+   ```dockerfile
+   # 构建阶段使用代理
+   ENV http_proxy=http://172.23.192.1:7890
+   ENV https_proxy=http://172.23.192.1:7890
+   
+   RUN pip install requests  # 这时就能走代理
+   
+   # 安全起见，生产镜像可 unset
+   RUN unset http_proxy https_proxy
+   ```
+
+   **在 `docker-compose.yml` 中配置**
+
+   ```yaml
+   services:
+     app:
+       image: python:3.10
+       environment:
+         - http_proxy=http://172.23.192.1:7890
+         - https_proxy=http://172.23.192.1:7890
+         - no_proxy=localhost,127.0.0.1
+   ```
+
+   **构建镜像时使用代理（Dockerfile）**
+
+   ```dockerfile
+   # 构建阶段使用代理
+   ENV http_proxy=http://172.23.192.1:7890
+   ENV https_proxy=http://172.23.192.1:7890
+   
+   RUN pip install requests  # 这时就能走代理
+   
+   # 安全起见，生产镜像可 unset
+   RUN unset http_proxy https_proxy
+   ```
+
+   ​	
+
+   
+
+   
 
 
 
