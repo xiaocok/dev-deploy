@@ -215,6 +215,10 @@ conda create --name <env_name> <package_names>
 conda create --name py37 python=3.7 numpy pandas
 ```
 
+`<env_name>`即创建的环境名。建议以英文命名，且不加空格，名称两边不加尖括号“<>”。
+
+`<package_names>`即安装在环境中的包名。名称两边不加尖括号“<>”。如果要在新创建的环境中创建多个包，则直接在`<package_names>`后以空格隔开，添加多个包名即可。例如，创建一个名为`py37`的环境，环境中安装版本为3.7的python，同时也安装了`numpy`和`pandas`：
+
 **切换环境**
 
 ```shell
@@ -248,6 +252,57 @@ conda remove --name <env_name> --all
 ```
 
 #### 包管理
+
+##### 常用操作
+
+查看当前环境的 Python 版本
+
+```shell
+python --version
+# 或
+conda list python
+```
+
+创建新环境并指定 Python 版本
+
+```shell
+# 创建名为 myenv 的环境，使用 Python 3.10
+conda create -n myenv python=3.10
+
+# 激活环境
+conda activate myenv
+
+# 验证
+python --version  # 输出：Python 3.10.x
+```
+
+在已有环境中升级/降级 Python
+
+```shell
+# 切换到目标环境
+conda activate myenv
+```
+
+查看所有可用的 Python 版本
+
+```shell
+conda search python
+```
+
+🆚 Conda vs 系统 Python vs pyenv
+
+| 工具                        | 能否安装 Python？ | 特点                                           |
+| --------------------------- | ----------------- | ---------------------------------------------- |
+| **Conda**                   | ✅ 是              | 跨平台、自带科学计算库、可管理非 Python 软件   |
+| **系统包管理器**（apt/yum） | ✅ 是              | 与系统绑定，版本较旧                           |
+| **pyenv**                   | ✅ 是              | 专注 Python 版本管理，轻量                     |
+| **pip**                     | ❌ 否              | 只能安装 Python 包，不能安装 Python 解释器本身 |
+
+> 💡 Conda 安装的 Python 是**独立于系统 Python 的完整副本**，不会影响系统稳定性。
+
+
+
+##### 命令解析
 
 **获取当前环境中已安装的包信息**
 
