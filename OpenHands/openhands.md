@@ -1116,6 +1116,120 @@ Dev Containers: Attach to Running Container...
 
 
 
+
+
+#### **Poetry环境管理**
+
+Poetry **默认不会**在项目目录下创建虚拟环境，而是将所有项目的虚拟环境统一存放在系统的**全局缓存目录**中（例如 macOS 上是 `~/Library/Caches/pypoetry/virtualenvs/`）。
+
+**📁 默认虚拟环境位置（按操作系统）**
+
+| 操作系统          | 默认路径                                                     |
+| ----------------- | ------------------------------------------------------------ |
+| **macOS / Linux** | `~/Library/Caches/pypoetry/virtualenvs/`（macOS） `~/.cache/pypoetry/virtualenvs/`（Linux） |
+| **Windows**       | `%LOCALAPPDATA%\pypoetry\Cache\virtualenvs\`                 |
+
+> 路径中的每个虚拟环境文件夹名通常为：
+> `{project-name}-{hash}`，例如：`myproject-AbC123de-py3.11`
+>
+> **`hashlib.sha256(f"{project_root_path}{python_version}".encode()).hexdigest()[:7]` 的 Base32 编码变体**
+
+- 保证**相同项目路径 + 相同 Python 版本 → 相同哈希**
+- 避免虚拟环境路径冲突（比如两个同名但不同路径的项目）
+- 路径可读性（比完整 hash 短）
+
+**🔍 如何查看当前项目的虚拟环境路径？**
+
+在项目根目录下运行：
+
+```Bash
+poetry env info --path
+```
+
+```Text
+/Users/yourname/Library/Caches/pypoetry/virtualenvs/myproject-AbC123de-py3.11
+```
+
+
+
+**虚拟环境设置在项目内：全局**
+
+```bash
+# 如何查看当前项目的虚拟环境路径
+poetry env info --path
+
+# 列出当前项目关联的所有虚拟环境
+poetry env list
+
+# 设置方法（全局生效）：
+poetry config virtualenvs.in-project true
+# ⚠️ 这个设置只对新创建的虚拟环境生效。已有项目需手动重建。
+
+# 验证是否启用
+poetry config virtualenvs.in-project
+# 输出: true
+
+# 删除旧环境并重建：虚拟环境名称
+poetry env remove python3.12
+poetry env remove myproject-AbC123de-py3.11
+
+# 指定 Python 解释器并重建环境：创建当前项目的.venv目录下
+poetry env use python3.12
+
+# 激活虚拟环境
+poetry env activate
+
+# 安装依赖
+poetry install
+```
+
+**📌 最佳实践建议**
+
+1. **团队项目**：在 README 中说明是否使用 `.venv`，避免有人误提交。
+
+2. **`.gitignore`**：确保包含 `.venv/`（如果放在项目内）：
+
+   ```bash
+   # Virtual environments
+   .venv/
+   venv/
+   ```
+
+3. **CI/CD**：Poetry 在 CI 中总是创建新环境，路径不影响。
+
+
+
+**其他命令**
+
+```bash
+# 告诉 Poetry 使用哪个 Python
+poetry env use python3.10
+# 然后再运行
+poetry install
+
+# 查看当前项目使用的虚拟环境路径
+poetry env info
+
+# 列出已安装的包
+poetry show
+
+# 或直接运行 Python 并导入某个依赖
+poetry run python -c "import requests; print(requests.__version__)"
+```
+
+
+
+**🧹 管理虚拟环境常用命令**
+
+| 命令                        | 作用                           |
+| --------------------------- | ------------------------------ |
+| `poetry env list`           | 列出当前项目关联的所有虚拟环境 |
+| `poetry env remove python`  | 删除当前项目的虚拟环境         |
+| `poetry env use python3.12` | 指定 Python 解释器并重建环境   |
+| `poetry env activate`       | 激活虚拟环境                   |
+
+
+
 #### VsCode打开代码
 
 **目录选择**
@@ -1127,6 +1241,8 @@ Dev Containers: Attach to Running Container...
 ##### <span style="color:red">**选择python环境**</span>
 
 > 这里有全套的python环境
+
+/root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12
 
  **默认快捷键：**
 
@@ -1145,11 +1261,11 @@ root@76a5c21f8e84:/app# source /root/.cache/pypoetry/virtualenvs/openhands-ai-9T
 
 
 ##### **VsCode安装插件**
-
 > python开发调试插件
 
 - Python
 - Python Debugger
+- **Pylance**：Python代码补全，跳转只定义和调用处
 
 
 
@@ -1559,7 +1675,11 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
 
 5. VsCode打开代码：代理路径，/workspaces/xxxx
 
-6. VS Code安装插件：Python、Python Debugger
+6. VS Code安装插件：
+
+   - Python
+   - Python Debugger
+   - **Pylance**：Python代码补全，跳转只定义和调用处
 
 7. 选择Python解释器：
 
@@ -1591,6 +1711,7 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    ```shell
    # 激活环境
    source /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12/bin/activate
+   
    
    vscode ➜ /workspaces/OpenHands (main) $ source /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12/bin/activate
    (openhands-ai-py3.12) vscode ➜ /workspaces/OpenHands (main)
