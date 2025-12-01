@@ -418,6 +418,15 @@ Tested with Ubuntu 22.04.
      ```
    
      查看是否还有 inet6 地址
+     
+   - 网络
+   
+     - [使用 WSL 访问网络应用程序 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/networking#mirrored-mode-networking)  网络模式：NAT Mirroed
+     - [使用 WSL 访问网络应用程序 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/wsl/networking#auto-proxy) 代理：自动代理
+   
+     
+   
+     
    
 
 #### Ubuntu (Linux Distribution)
@@ -1488,7 +1497,10 @@ docker run --sig-proxy=false -a STDOUT -a STDERR --mount type=bind,source=d:\pyt
 > 进入容器后，选择这个虚拟环境
 
 ```shell
+# 创建的虚拟环境
 Creating virtualenv openhands-ai-QLt0qIPP-py3.12 in /home/vscode/.cache/pypoetry/virtualenvs
+
+# 使用虚拟环境
 Using virtualenv: /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12
 ```
 
@@ -1558,7 +1570,10 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    > 第一次进入容器时，会自动创建虚拟环境如下，并且会执行`poetry install`安装相关依赖
 
    ```shell
+   # 创建的虚拟环境
    Creating virtualenv openhands-ai-QLt0qIPP-py3.12 in /home/vscode/.cache/pypoetry/virtualenvs
+   
+   # 使用虚拟环境
    Using virtualenv: /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12
    ```
 
@@ -1576,7 +1591,6 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    ```shell
    # 激活环境
    source /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12/bin/activate
-   
    
    vscode ➜ /workspaces/OpenHands (main) $ source /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12/bin/activate
    (openhands-ai-py3.12) vscode ➜ /workspaces/OpenHands (main)
