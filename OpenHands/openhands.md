@@ -646,6 +646,34 @@ Dev Containers: Attach to Running Container...
 
 
 
+**Poetry环境管理**
+
+Poetry **默认不会**在项目目录下创建虚拟环境，而是将所有项目的虚拟环境统一存放在系统的**全局缓存目录**中（例如 macOS 上是 `~/Library/Caches/pypoetry/virtualenvs/`）。
+
+**📁 默认虚拟环境位置（按操作系统）**
+
+| 操作系统          | 默认路径                                                     |
+| ----------------- | ------------------------------------------------------------ |
+| **macOS / Linux** | `~/Library/Caches/pypoetry/virtualenvs/`（macOS） `~/.cache/pypoetry/virtualenvs/`（Linux） |
+| **Windows**       | `%LOCALAPPDATA%\pypoetry\Cache\virtualenvs\`                 |
+
+> 路径中的每个虚拟环境文件夹名通常为：
+>  `{project-name}-{hash}`，例如：`myproject-AbC123de-py3.11`
+
+**🔍 如何查看当前项目的虚拟环境路径？**
+
+在项目根目录下运行：
+
+```Bash
+1poetry env info --path
+```
+
+```Text
+1/Users/yourname/Library/Caches/pypoetry/virtualenvs/myproject-AbC123de-py3.11
+```
+
+
+
 **选择python环境**
 
 /root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12
@@ -660,12 +688,33 @@ root@76a5c21f8e84:/app# source /root/.cache/pypoetry/virtualenvs/openhands-ai-9T
 
 
 
+其他命令
+
+```bash
+# 告诉 Poetry 使用哪个 Python
+poetry env use python3.10
+# 然后再运行
+poetry install
+
+# 查看当前项目使用的虚拟环境路径
+poetry env info
+
+# 列出已安装的包
+poetry show
+
+# 或直接运行 Python 并导入某个依赖
+poetry run python -c "import requests; print(requests.__version__)"
+```
+
+
+
 **VsCode安装插件**
 
 > python开发调试插件
 
 - Python
 - Python Debugger
+- **Pylance**：Python代码补全，跳转只定义和调用处
 
 
 
@@ -1053,7 +1102,11 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
 
 5. VsCode打开代码：代理路径，/workspaces/xxxx
 
-6. VS Code安装插件：Python、Python Debugger
+6. VS Code安装插件：
+
+   - Python
+   - Python Debugger
+   - **Pylance**：Python代码补全，跳转只定义和调用处
 
 7. 选择Python解释器：
 
