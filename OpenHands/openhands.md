@@ -302,6 +302,122 @@ Tested with Ubuntu 22.04.
           1. **不要长期用 root**，创建一个普通用户。
           2. **给普通用户设密码**（虽然日常不用输，但用于 `sudo` 和安全性）。
           3. 如果你要开启 SSH 服务，**必须设置密码**（或配置密钥）。
+     
+   - **WSL其他设置**
+   
+     https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#configure-global-options-with-wslconfig
+   
+     https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#wslconf
+     
+     https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#wslconfig
+     
+     > `wsl.conf` 用于根据 WSL 发行版应用设置，`.wslconfig` 用于将全局设置应用于 WSL
+     
+     | 方面  | `.wslconfig`                                                 | `wsl.conf`                                                   |
+     | :---- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+     | Scope | 适用于所有 WSL 的常规设置                                    | 仅限 WSL 分发的设置                                          |
+     | 配置  | WSL 中的功能启用、为 WSL 2 提供支持的虚拟机设置（RAM、要启动的内核、CPU 数等） | WSL 中的分发设置，例如启动选项、DrvFs 自动装载、网络、与 Windows 系统的互作性、系统使用情况和默认用户 |
+     | 位置  | `%UserProfile%\.wslconfig`，在 WSL 分发之外                  | `/etc/wsl.conf`，而在 WSL 分发中                             |
+     
+     设置完成后需要重启
+     
+     ```shell
+     # 查看全部运行的
+     wsl --list --running
+     
+     # 关闭指定的
+     wsl --terminate <distroName>
+     ```
+     
+     
+     
+     wsl.conf
+   
+     > /etc/wsl.conf
+   
+     ```shell
+     vi /etc/wsl.conf
+     
+     # 启用 systemd
+     [boot]
+     systemd=true
+     
+     # 验证是否生效
+     # systemctl list-unit-files --type=service
+     
+     # 启动root权限
+     [user]
+     default=root
+     ```
+     
+     .wslconfig
+     
+     > C:\Users\<UserName>\.wslconfig
+     
+     建议直接在 WSL 设置中修改 WSL 配置，而不是手动编辑 .wslconfig 文件。 可以在“开始”菜单中找到 WSL 设置。 ![适用于 Linux 设置的 Windows 子系统](openhands.assets/wsl-settings.png)
+     
+     网络模式：Mirrored
+     
+     ![image-20251129081411699](openhands.assets/image-20251129081411699.png)
+     
+     **总结对比**
+     
+     | 模式        | 是否用户可选 | IP 特点               | 外部可访问性 | 支持版本          |
+     | ----------- | ------------ | --------------------- | ------------ | ----------------- |
+     | NAT         | 否（默认）   | 私有 IP（每次可能变） | 需端口转发   | WSL2 全版本       |
+     | Mirrored    | 是（实验性） | **与主机相同**        | 直接可访问   | Win11 22H2+       |
+     | VirtioProxy | 否（底层）   | —                     | —            | WSL2 内部机制     |
+     | None        | 间接支持     | 无网络                | 不可访问     | 特殊配置/故障情况 |
+     
+     **localhost转发**
+     
+     WSL2 运行在一个轻量级的 Hyper-V 虚拟机中，拥有自己的虚拟网络接口和私有 IP 地址（如 `172.28.123.45`）。
+     
+     **localhost 转发** 是指：当你在 Windows 上访问 `localhost:端口` 时，如果该端口在 WSL2 中有服务正在监听，Windows 会自动将这个请求**透明地转发**到 WSL2 虚拟机中的对应端口。
+     
+     - WSL2 启动时，会与 Windows 主机建立一个 **Virtio 网络通道**。
+     - Windows 监听本地回环地址（`127.0.0.1`）上的 TCP 连接。
+     - 当检测到某个端口在 WSL2 中处于 **LISTEN** 状态，Windows 会动态创建一个 **端口代理（port proxy）**，将 `127.0.0.1:端口` 的流量转发到 WSL2 的虚拟 IP 对应端口。
+     - 这个过程对用户**完全透明**，无需手动配置 `netsh portproxy`。
+     
+     **查看 WSL2 的实际 IP**（用于手动访问）
+     
+     ```shell
+     hostname -I
+     # 输出如：172.28.123.45
+     ```
+     
+   - wsl关闭ipv6
+   
+     ```shell
+     vi /etc/sysctl.conf
+     
+     # 在文件末尾添加以下内容
+     # Disable IPv6
+     net.ipv6.conf.all.disable_ipv6 = 1
+     net.ipv6.conf.default.disable_ipv6 = 1
+     net.ipv6.conf.lo.disable_ipv6 = 1
+     
+     # 立即应用配置
+     sudo sysctl -p
+     ```
+   
+     验证 IPv6 是否已禁用
+   
+     ```shell
+     cat /proc/sys/net/ipv6/conf/all/disable_ipv6
+     ```
+   
+     - 输出 1 表示已禁用
+     - 输出 0 表示仍启用
+   
+     也可以用
+   
+     ```shell
+     ip a
+     ```
+   
+     查看是否还有 inet6 地址
    
 
 #### Ubuntu (Linux Distribution)
@@ -321,6 +437,19 @@ Tested with Ubuntu 22.04.
 - Resources > Disk image location 设置镜像位置
 
 The docker command below to start the app must be run inside the WSL terminal. Use `wsl -d Ubuntu` in PowerShell or search “Ubuntu” in the Start menu to access the Ubuntu terminal.
+
+**Docker关闭IPv6**
+
+Settings -> Docker Engine
+
+```shell
+vi /etc/docker/daemon.json
+
+{
+  "ipv6": false,
+  "experimental": false,
+}
+```
 
 
 
@@ -389,6 +518,265 @@ wsl --shutdown
 下载：
 
 https://github.com/microsoft/terminal/releases
+
+
+
+#### 使用代理
+
+##### WSL使用代理
+
+**代理工具开启：允许局域网连接接入7890端口**
+
+> Net网络模式需要设置，如果是Mirrored模式，不需要设置
+
+###### 通用模式
+
+**获取Windows在WSL中的ip**
+
+```shell
+cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
+
+# 输出
+172.28.128.1
+```
+
+> 这个 `172.x.x.1` 就是 **Windows 主机在 WSL2 虚拟网络中的网关 IP**，所有发往该 IP 的流量都会被转发到 Windows。
+
+**在 WSL2 中设置代理环境变量**
+
+> 假设你的 Windows 代理端口是 `7890`（常见于 Clash），在 WSL2 中执行
+
+```shell
+# 设置临时代理（当前会话有效）
+export http_proxy="http://172.28.128.1:7890"
+export https_proxy="http://172.28.128.1:7890"
+export no_proxy="localhost,127.0.0.1,::1"
+```
+
+执行相关代理操作
+
+
+
+**永久生效（写入 shell 配置文件）**
+
+如果你用的是 bash（默认）：
+
+```shell
+echo 'export host_ip=$(cat /etc/resolv.conf | grep nameserver | awk \'{print $2}\')' >> ~/.bashrc
+echo 'export http_proxy="http://$host_ip:7890"' >> ~/.bashrc
+echo 'export https_proxy="http://$host_ip:7890"' >> ~/.bashrc
+echo 'export no_proxy="localhost,127.0.0.1,::1"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+如果你用的是 zsh：
+
+```shell
+echo 'export host_ip=$(cat /etc/resolv.conf | grep nameserver | awk '\''{print $2}'\'')' >> ~/.zshrc
+echo 'export http_proxy="http://$host_ip:7890"' >> ~/.zshrc
+echo 'export https_proxy="http://$host_ip:7890"' >> ~/.zshrc
+echo 'export no_proxy="localhost,127.0.0.1,::1"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+> 💡 这样每次启动 WSL2 终端都会自动设置代理。
+
+**✅ 验证代理是否生效**
+
+> 在 WSL2 中测试：
+
+```shell
+curl -I https://www.google.com
+```
+
+如果返回 HTTP 200 或 301，说明代理工作正常。
+
+也可以测试 IP：
+
+```shell
+curl ipinfo.io
+```
+
+看是否显示代理出口 IP。
+
+
+
+###### 使用过VPN的情况
+
+```shell
+cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
+
+# 输出为：
+10.xxx.xxx.xxx
+```
+
+在标准 WSL2 环境中，`/etc/resolv.conf` 的 `nameserver` 通常是 `172.x.x.1`（Windows 主机在 WSL2 虚拟网络中的网关）。
+
+表明主机处于企业网络、校园网或使用了自定义 DNS/代理网关（如某些安全软件、虚拟网卡、或公司 IT 策略）。
+
+Windows 启用了“DNS over HTTPS (DoH)”或组策略强制 DNS：某些策略会覆盖 WSL2 的默认 DNS 行为。
+
+**查看 WSL2 的默认路由**
+
+在 WSL2 中运行：
+
+```shell
+ip route show default
+
+# 输出
+default via 172.23.192.1 dev eth0 proto kernel
+
+# 从默认路由提取
+ip route show default | awk '{print $3}'
+```
+
+> ✅ 这明确显示：**所有非本地流量都通过 `172.23.192.1` 转发到 Windows**。**Windows 主机在 WSL2 虚拟网络中的 IP 地址是 `172.23.192.1`**
+
+**✅ 正确结论：访问 Windows 服务请用 `172.23.192.1`**
+
+- 如果你在 Windows 上运行了代理（如 Clash、v2ray，默认监听 `127.0.0.1:7890`），
+- 那么在 WSL2 中应使用：`http://172.23.192.1:7890`
+
+
+
+**测试能否访问 Windows 上的代理**
+
+**✅ 验证代理是否生效**
+
+```shell
+curl -v http://172.23.192.1:7890
+```
+
+如果返回类似 `HTTP/1.1 400 Bad Request`（因为代理期望 CONNECT 或 HTTPS），说明连接成功。
+
+或者
+
+> 在 WSL2 中测试：
+
+```shell
+curl -I https://www.google.com
+```
+
+如果返回 HTTP 200 或 301，说明代理工作正常。
+
+也可以测试 IP：
+
+```shell
+curl ipinfo.io
+```
+
+看是否显示代理出口 IP。
+
+
+
+**🛠 推荐：自动获取正确的 Windows 主机 IP**
+
+在脚本中，**优先使用默认网关 IP**（更可靠）：
+
+测试：
+
+```bash
+# 获取 Windows 主机在 WSL2 中的真实 IP（用于访问服务）
+WIN_HOST=$(ip route show default | awk '{print $3}')
+echo "Windows host IP: $WIN_HOST"
+
+# 设置代理（假设端口 7890）
+export http_proxy="http://$WIN_HOST:7890"
+export https_proxy="http://$WIN_HOST:7890"
+export no_proxy="localhost,127.0.0.1,::1"
+```
+
+存入启动脚本
+
+```shell
+echo 'WIN_HOST=$(ip route show default | awk \'{print $3}\')' >> ~/.bashrc
+
+echo 'export http_proxy="http://$WIN_HOST:7890"'  >> ~/.bashrc
+echo 'export https_proxy="http://$WIN_HOST:7890"'  >> ~/.bashrc
+echo 'export no_proxy="localhost,127.0.0.1,::1"'  >> ~/.bashrc
+
+# 生效
+source ~/.bashrc
+```
+
+执行代理相关操作
+
+> ✅ 这比从 `/etc/resolv.conf` 读取更准确，尤其在企业网络中。
+
+
+
+##### Docker Desktop 使用代理
+
+1. **找到IP**：例如172.23.192.1
+
+2. **打开 Docker Desktop 设置**
+
+   - 右键任务栏 Docker 图标 → **Settings**
+   - 或打开 Docker Desktop 应用 → 左下角 **⚙️ Settings**
+
+3. **配置代理**
+
+   左侧选择 **Resources → Proxies**
+
+   填写：
+
+   | 字段            | 值                         |
+   | --------------- | -------------------------- |
+   | **HTTP proxy**  | `http://172.23.192.1:7890` |
+   | **HTTPS proxy** | `http://172.23.192.1:7890` |
+
+   **启动容器时传入环境变量**
+
+   ```shell
+   docker run -it \
+     --env http_proxy=http://172.23.192.1:7890 \
+     --env https_proxy=http://172.23.192.1:7890 \
+     alpine sh
+   ```
+
+   **在 `docker-compose.yml` 中配置**
+
+   ```dockerfile
+   # 构建阶段使用代理
+   ENV http_proxy=http://172.23.192.1:7890
+   ENV https_proxy=http://172.23.192.1:7890
+   
+   RUN pip install requests  # 这时就能走代理
+   
+   # 安全起见，生产镜像可 unset
+   RUN unset http_proxy https_proxy
+   ```
+
+   **在 `docker-compose.yml` 中配置**
+
+   ```yaml
+   services:
+     app:
+       image: python:3.10
+       environment:
+         - http_proxy=http://172.23.192.1:7890
+         - https_proxy=http://172.23.192.1:7890
+         - no_proxy=localhost,127.0.0.1
+   ```
+
+   **构建镜像时使用代理（Dockerfile）**
+
+   ```dockerfile
+   # 构建阶段使用代理
+   ENV http_proxy=http://172.23.192.1:7890
+   ENV https_proxy=http://172.23.192.1:7890
+   
+   RUN pip install requests  # 这时就能走代理
+   
+   # 安全起见，生产镜像可 unset
+   RUN unset http_proxy https_proxy
+   ```
+
+   ​	
+
+   
+
+   
 
 
 
@@ -582,6 +970,35 @@ https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remo
 
 #### 创建dev容器环境
 
+如果已有镜像，只需要另外的环境复用，则先导入2个镜像再执行后续流程
+
+```shell
+openhands:dev
+
+ghcr.io/openhands/agent-server:15f565b-python
+```
+
+
+
+**VS Code打开代码主目录：因为需要挂载文件**
+
+
+
+Windows
+
+> Windows不能执行shell脚本，脚步需要在Ubuntu中执行。需要先启动子系统，再执行。
+
+```shell
+# 在VS Code的终端执行命令：开启wsl子系统，并进入ubuntu子系统
+wsl -D Ubuntu
+
+# 进入子系统后，则可以执行下面的命令
+cd containers/dev
+./dev.sh
+```
+
+Linux / MacOS
+
 ```shell
 cd containers/dev
 ./dev.sh
@@ -594,11 +1011,63 @@ cd containers/dev
 root@76a5c21f8e84:/app# 
 ```
 
+**如果报错：**删除/root/.gitconfig文件夹
+
+```shell
+root@DESKTOP-0ANSR1G:/mnt/d/python/OpenHands/containers/dev# ./dev.sh
+warning: unable to access '/root/.gitconfig': Is a directory
+warning: unable to access '/root/.gitconfig': Is a directory
+fatal: unknown error occurred while reading the configuration files
+./dev.sh: line 29: cd: /containers/dev/: No such file or directory
+root@DESKTOP-0ANSR1G:/mnt/d/python/OpenHands/containers/dev# rm -rf /root/.gitconfig
+```
+
 - 创建名为openhands:dev的镜像
+
 - 运行该镜像的容器用于调试，名称为：dev-dev-run-xxx随机数
+
 - 需要下载的运行时镜像
 
+- VsCode Server下载地址
+
+  ```shell
+  https://update.code.visualstudio.com/commit:{commit}/server-linux-x64/stable
+  
+  https://update.code.visualstudio.com/commit:bf9252a2fb45be6893dd8870c0bf37e2e1766d61/server-linux-x64/stable
+  ```
+
 ![image-20251123181940484](openhands.assets/image-20251123181940484.png)
+
+##### 沙箱以host网络模式运行
+
+在 **host 模式**下，容器**不会创建自己的网络命名空间**，而是**直接共享宿主机的网络栈**。这意味着：
+
+- 容器内的进程**直接使用宿主机的 IP 地址和端口**；
+- 不再有 Docker 的网络隔离（如 bridge、NAT、端口映射等）；
+- 容器内监听的 `0.0.0.0:8080` 就等于宿主机的 `0.0.0.0:8080`，无需 `-p 8080:8080` 映射。
+
+1. Dev Containers
+
+   ![image-20251127214206405](openhands.assets/image-20251127214206405.png)
+
+2. 通过环境变量设置
+
+   ```bash
+   export SANDBOX_USE_HOST_NETWORK=true
+   ```
+
+3. 配置文件添加：config.toml
+
+   ```toml
+   [sandbox]
+   use_host_network = true
+   ```
+
+**每次退出谁删除dev容器：**如果希望保留，删除这个--rm
+
+![image-20251129091250796](openhands.assets/image-20251129091250796.png)
+
+
 
 
 
@@ -646,6 +1115,7 @@ Dev Containers: Attach to Running Container...
 
 
 
+<<<<<<< HEAD
 **Poetry环境管理**
 
 Poetry **默认不会**在项目目录下创建虚拟环境，而是将所有项目的虚拟环境统一存放在系统的**全局缓存目录**中（例如 macOS 上是 `~/Library/Caches/pypoetry/virtualenvs/`）。
@@ -677,17 +1147,29 @@ Poetry **默认不会**在项目目录下创建虚拟环境，而是将所有项
 **选择python环境**
 
 /root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12
+=======
+##### <span style="color:red">**选择python环境**</span>
+>>>>>>> 5dd9e636101ccf4cb52d090e8a8bae26b42475be
 
 > 这里有全套的python环境
 
-激活环境
+ **默认快捷键：**
+
+- **Windows / Linux**：
+  `Ctrl + Shift + P` → 输入 `Python: Select Interpreter` → 回车
+- **macOS**：
+  `Cmd + Shift + P` → 输入 `Python: Select Interpreter` → 回车
 
 ```shell
+/root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12
+
+# 激活环境
 root@76a5c21f8e84:/app# source /root/.cache/pypoetry/virtualenvs/openhands-ai-9TtSrW0h-py3.12/bin/activate
 ```
 
 
 
+<<<<<<< HEAD
 其他命令
 
 ```bash
@@ -709,6 +1191,9 @@ poetry run python -c "import requests; print(requests.__version__)"
 
 
 **VsCode安装插件**
+=======
+##### **VsCode安装插件**
+>>>>>>> 5dd9e636101ccf4cb52d090e8a8bae26b42475be
 
 > python开发调试插件
 
@@ -816,17 +1301,21 @@ sudo systemctl restart docker
 
 > 设置好断点，F5启动调试
 
+1. 打开浏览器访问 http://127.0.0.1:3000
 
+2. 或者查看给容器分配的转发地址：在容器内执行，不是虚拟机
 
-打开浏览器访问
+   ```shell
+   cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
+   
+   127.0.0.11
+   ```
 
-http://127.0.0.1:3000
+   打开浏览器访问 http://127.0.0.11:3000
 
 
 
 配置大模型信息，创建新的对话
-
-
 
 1. 会下载镜像，镜像根据从github下载的代码版本有关
 
@@ -972,7 +1461,7 @@ curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1
 
 1. **用 VS Code 打开项目根目录**
 
-   > 项目根目录必须包含`.devcontainer/devcontainer.json`文件
+   <span style="color:red">**项目根目录必须包含`.devcontainer/devcontainer.json`文件**</span>
 
    **方式一：命令行打开**
 
@@ -1011,6 +1500,14 @@ curl -L https://github.com/docker/buildx/releases/latest/download/buildx-v0.30.1
 
    - **读取开发容器配置(显示日志)，看是否报错**
 
+   - VsCode Server下载地址（会自动下载）
+
+     ```shell
+     https://update.code.visualstudio.com/commit:{commit}/server-linux-x64/stable
+     
+     https://update.code.visualstudio.com/commit:bf9252a2fb45be6893dd8870c0bf37e2e1766d61/server-linux-x64/stable
+     ```
+
 3. **VS Code 会自动执行以下流程：**
 
    > 过程中会下载镜像和代码，安装部分工具。**如果有代理会更快。**
@@ -1045,7 +1542,14 @@ Container started
 docker run --sig-proxy=false -a STDOUT -a STDERR --mount type=bind,source=d:\python\OpenHands,target=/workspaces/OpenHands,consistency=cached --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker-host.sock --mount type=volume,src=vscode,dst=/vscode -l devcontainer.local_folder=d:\python\OpenHands -l devcontainer.config_file=d:\python\OpenHands\.devcontainer\devcontainer.json -e DOCKER_HOST_ADDR=host.docker.internal --add-host=host.docker.internal:host-gateway --security-opt label=disable --entrypoint /bin/sh vsc-openhands-7fca7330b31167c10e49d33c474d7f0dd35963d7da44348e3c60f6689ed9481e-features -c echo Container started
 ```
 
+<span style="color:red">**Python的虚拟机环境**</span>
 
+> 进入容器后，选择这个虚拟环境
+
+```shell
+Creating virtualenv openhands-ai-QLt0qIPP-py3.12 in /home/vscode/.cache/pypoetry/virtualenvs
+Using virtualenv: /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12
+```
 
 
 
@@ -1110,9 +1614,16 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
 
 7. 选择Python解释器：
 
-   > 选择Python 3.12的版本
+   <span style="color:red">**Python的虚拟机环境**</span>
+
+   > 进入容器后，选择这个虚拟环境
    >
-   > 使用该版本创建虚拟环境，目前这个只是为了创建虚拟环境。也是可以直接使用当前环境为正式环境。
+   > 第一次进入容器时，会自动创建虚拟环境如下，并且会执行`poetry install`安装相关依赖
+
+   ```shell
+   Creating virtualenv openhands-ai-QLt0qIPP-py3.12 in /home/vscode/.cache/pypoetry/virtualenvs
+   Using virtualenv: /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12
+   ```
 
     **默认快捷键：**
 
@@ -1123,27 +1634,18 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
 
    > ⚠️ VS Code **没有为“选择 Python 环境”分配单一专用快捷键**（如 `Ctrl+K, Ctrl+P` 这类组合），必须通过命令面板（Command Palette）调用。
 
-   ![image-20251125232941979](openhands.assets/image-20251125232941979.png)
-
-8. 创建虚拟环境
-
-   >  `Ctrl + Shift + P` → 输入 `Python: Select Interpreter` → 回车。通过这个也可以页面点击**创建虚拟环境**
+   ![image-20251128204406576](openhands.assets/image-20251128204406576.png)
 
    ```shell
-   # 创建虚拟环境
-   python -m venv .venv
+   # 激活环境
+   source /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12/bin/activate
    
-   # 激活虚拟环境
-   source .venv/bin/activate
+   
+   vscode ➜ /workspaces/OpenHands (main) $ source /home/vscode/.cache/pypoetry/virtualenvs/openhands-ai-QLt0qIPP-py3.12/bin/activate
+   (openhands-ai-py3.12) vscode ➜ /workspaces/OpenHands (main)
    ```
 
-9. 选择虚拟环境作为python解释器：
-
-   > 选择刚才创建的虚拟环境.venv/bin/python。会将依赖包下载至该环境
-
-   ![image-20251126111400034](openhands.assets/image-20251126111400034.png)
-
-10. 安装node.js依赖库：科学上网
+8. 安装node.js依赖库：科学上网
 
    ```shell
    cd frontend
@@ -1154,39 +1656,42 @@ abcd1234       vsc-yourproject-xxxxxx   "/bin/sh -c 'echo Co…"   ...
    # 或更详细的，极其详细（含网络请求、内部状态）：查看完整调试日志（排查安装失败时很有用）
    # npm install --loglevel silly
    
+   # 输出info ok 即完成
+   # Run `npm audit` for details.
+   # npm verbose cwd /workspaces/OpenHands/frontend
+   # npm verbose os Linux 6.6.87.2-microsoft-standard-WSL2
+   # npm verbose node v24.11.1
+   # npm verbose npm  v11.6.2
+   # npm verbose exit 0
+   # npm info ok
+   
    npm run build
    cd ..
    ```
 
-11. 安装python依赖：科学上网
+9. 创建调试
 
-    ```shell
-    poetry install
-    ```
+   ```shell
+   {
+       // 使用 IntelliSense 了解相关属性。 
+       // 悬停以查看现有属性的描述。
+       // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+       "version": "0.2.0",
+       "configurations": [
+           {
+               "name": "Python 调试程序: 包含参数的当前文件",
+               "type": "debugpy",
+               "request": "launch",
+               "program": "${workspaceFolder}/openhands/server/__main__.py",
+               "cwd": "${workspaceFolder}",
+               "console": "integratedTerminal",
+               "args": ["--reload", "--port", "3000"]
+           }
+       ]
+   }
+   ```
 
-12. 创建调试
-
-    ```json
-    {
-        // 使用 IntelliSense 了解相关属性。 
-        // 悬停以查看现有属性的描述。
-        // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
-        "version": "0.2.0",
-        "configurations": [
-            {
-                "name": "Python 调试程序: 包含参数的当前文件",
-                "type": "debugpy",
-                "request": "launch",
-                "program": "${workspaceFolder}/openhands/server/__main__.py",
-                "cwd": "${workspaceFolder}",
-                "console": "integratedTerminal",
-                "args": ["--reload", "--port", "3000"]
-            }
-        ]
-    }
-    ```
-
-13. 启动调试：F5，会在容器中下载VS Code的服务端，第一次要耗时较久
+10. 启动调试：F5，会在容器中下载VS Code的服务端，第一次要耗时较久
 
 
 
