@@ -1329,6 +1329,153 @@ sudo systemctl restart docker
 
 
 
+**🐧 Linux 虚拟机修改DNS解析**
+
+临时修改（重启后失效）（以 Ubuntu/CentOS 为例）
+
+直接编辑 `/etc/resolv.conf` 文件：
+
+```bash
+sudo vi /etc/resolv.conf
+```
+
+添加或修改 nameserver，例如使用阿里云或 114 DNS：
+
+```conf
+nameserver 223.5.5.5      # 阿里 DNS
+nameserver 114.114.114.114
+nameserver 8.8.8.8        # Google DNS
+```
+
+> ⚠️ 注意：在很多现代 Linux 发行版中，`/etc/resolv.conf` 是由网络管理服务（如 NetworkManager、systemd-resolved）自动生成的，手动修改可能被覆盖。
+
+
+
+**WSL修改DNS解析**
+
+> 在 **WSL（Windows Subsystem for Linux）** 中修改 DNS 解析，需要特别注意：**WSL 1 和 WSL 2 的网络架构不同**，尤其是 **WSL 2 使用虚拟化网络（Hyper-V 虚拟网卡）**，其 DNS 默认由 Windows 主机通过 `/etc/resolv.conf` 动态生成，且每次启动 WSL 时可能被重置。
+
+------
+
+✅ 目标
+
+让 WSL 能正确解析 `pypi.org` 等域名（解决 Poetry 安装失败问题），通常是因为默认 DNS（如 172.x.x.1）无法访问外网或被干扰。
+
+------
+
+🔧 正确方法：防止 WSL 自动覆盖 `/etc/resolv.conf`
+
+**步骤 1：禁用 WSL 自动生成 `/etc/resolv.conf`**
+
+在 **Windows 主机**上操作：
+
+1. 打开你的用户目录（如 `C:\Users\<你的用户名>\`）
+
+2. 创建或编辑文件：
+
+   ```text
+   %USERPROFILE%\.wslconfig
+   ```
+
+3. 添加以下内容（可选，但推荐）：
+
+   ```ini
+   [network]
+   generateResolvConf = false
+   ```
+
+> 这会禁止 WSL 2 自动生成 `/etc/resolv.conf`。
+
+1. 关闭所有 WSL 实例
+
+   （重要！）： 在 PowerShell 或 CMD 中运行：
+
+   ```powershell
+   wsl --shutdown
+   ```
+
+------
+
+**步骤 2：在 WSL 中手动设置 DNS**
+
+重新启动 WSL（例如打开 Ubuntu 终端），然后：
+
+```bash
+sudo rm /etc/resolv.conf      # 删除自动生成的文件（如果还存在）
+sudo nano /etc/resolv.conf
+```
+
+写入可靠的 DNS 服务器，例如：
+
+```conf
+nameserver 223.5.5.5
+nameserver 114.114.114.114
+nameserver 8.8.8.8
+```
+
+保存退出。
+
+> ⚠️ 注意：确保该文件**没有被设为只读**。如果你之前启用了 `generateResolvConf = false`，就可以安全编辑。
+
+------
+
+**步骤 3：（可选）锁定 resolv.conf 防止意外修改**
+
+```bash
+sudo chattr +i /etc/resolv.conf   # 设置不可变属性（immutable）
+```
+
+> 如需修改，先运行：`sudo chattr -i /etc/resolv.conf`
+
+------
+
+**🔍 验证 DNS 是否生效**
+
+在 WSL 中运行：
+
+```bash
+nslookup pypi.org
+# 或
+ping pypi.org
+# 或
+curl -I https://pypi.org
+```
+
+如果能正常解析并连接，说明 DNS 已修复。
+
+------
+
+**🌐 补充建议（针对国内用户）**
+
+- 推荐 DNS：
+
+  - 阿里云：`223.5.5.5`、`223.6.6.6`
+  - 114 DNS：`114.114.114.114`
+  - 腾讯 DNSPod：`119.29.29.29`
+
+- 如果仍无法访问 PyPI，可配合使用 **PyPI 镜像源**（如清华源）：
+
+  ```bash
+  poetry config repositories.tuna https://pypi.tuna.tsinghua.edu.cn/simple
+  poetry add --source tuna aiosqlite
+  ```
+
+------
+
+**❗ 常见误区**
+
+- 直接编辑 `/etc/resolv.conf` 但未关闭 `generateResolvConf` → 重启 WSL 后失效。
+- 在 WSL 1 中一般不需要这么复杂，但 WSL 2 必须处理自动生成机制。
+- 不要修改 Windows 主机的 DNS 来“间接影响 WSL”，因为 WSL 2 使用独立虚拟网络。
+
+------
+
+完成以上步骤后，你的 WSL 应该可以正常解析域名，Poetry 也能顺利连接 PyPI。如有其他问题，欢迎继续提问！
+
+
+
+
+
 **创建launch.json调试文件**
 
 调试器选择：Python Debugger
