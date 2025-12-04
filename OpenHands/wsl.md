@@ -473,6 +473,36 @@ wsl --shutdown
 
 
 
+### 导入导出
+
+#### 📦 1. 创建快照（备份整个发行版）
+
+```powershell
+# 语法：wsl --export <发行版名称> <备份文件路径.tar>
+wsl --export Ubuntu-22.04 D:\wsl-backups\ubuntu-2204-snapshot-20251204.tar
+```
+
+#### 🔁 2. 恢复快照（还原到新实例或覆盖原实例）
+
+**方式 A：恢复为新发行版（安全，保留原系统）**
+
+```powershell
+wsl --import Ubuntu-22.04-Restored D:\wsl-distros\Ubuntu-22.04-Restored D:\wsl-backups\ubuntu-2204-snapshot-20251204.tar
+```
+
+**方式 B：覆盖原发行版（先注销再导入）**
+
+```powershell
+# 1. 终止并注销原发行版
+wsl --terminate Ubuntu-22.04
+wsl --unregister Ubuntu-22.04
+
+# 2. 重新导入（使用原名称）
+wsl --import Ubuntu-22.04 D:\wsl-distros\Ubuntu-22.04 D:\wsl-backups\ubuntu-2204-snapshot-20251204.tar
+```
+
+
+
 ### Windows 终端概述
 
 [Windows 终端概述 | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/terminal/)
