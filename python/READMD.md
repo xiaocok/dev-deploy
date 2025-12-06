@@ -358,7 +358,9 @@ conda remove -n <env_name> <package_name>
 
 
 
-## 初始化虚拟环境
+## 虚拟环境venv
+
+### 初始化虚拟环境
 
 ```shell
 # 初始化环境
@@ -412,5 +414,129 @@ deactivate
 
 #退出虚拟环境：
 deactivate
+```
+
+
+
+## 修改 Python 的 pip 源（镜像源）
+
+### 找到配置文件位置
+
+```powershell
+python -m pip config debug
+```
+
+这个命令会输出 **pip 会读取的所有配置文件路径**，包括：
+
+- 全局配置（如 `/etc/pip.conf` 或 Windows 的 `C:\ProgramData\pip\pip.ini`）
+- 用户级配置（如 `%APPDATA%\pip\pip.ini`）
+- 虚拟环境中的配置（如果存在 `venv/pip.conf` 或类似，虽然 Windows 下较少用）
+- 环境变量（如 `PIP_CONFIG_FILE`）
+
+输出
+
+```powershell
+env_var:
+env:
+global:
+    C:\ProgramData\pip\pip.ini
+user:
+    C:\Users\<用户名>\AppData\Roaming\pip\pip.ini
+site:
+    D:\<porject>\.venv\pip.ini   ← 如果存在
+```
+
+> 💡 注意：`site` 行只有在虚拟环境根目录下存在 `pip.conf`（Linux/macOS）或 `pip.ini`（Windows）时才会显示。Windows 上 pip 默认**不自动创建**虚拟环境内的配置文件，但如果你手动放一个，它会被识别。
+
+
+
+### ✅ 方法一：临时使用镜像源（单次命令）
+
+在 `pip install` 时通过 `-i` 参数指定镜像源，例如：
+
+```powershell
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple 包名
+```
+
+常用国内镜像源地址：
+
+| 镜像源        | 地址                                             |
+| ------------- | ------------------------------------------------ |
+| 清华大学      | `https://pypi.tuna.tsinghua.edu.cn/simple`       |
+| 阿里云        | `https://mirrors.aliyun.com/pypi/simple/`        |
+| 豆瓣 (douban) | `https://pypi.douban.com/simple/`                |
+| 中科大        | `https://pypi.mirrors.ustc.edu.cn/simple/`       |
+| 腾讯云        | `https://mirrors.cloud.tencent.com/pypi/simple/` |
+
+> ⚠️ 注意：有些镜像可能同步延迟，若安装失败可换其他源。
+
+------
+
+### ✅ 方法二：永久配置 pip 镜像源（推荐）
+
+**Windows 系统（如你当前使用的 PowerShell）**
+
+1. **创建 pip 配置目录**（如果不存在）：
+
+   ```powershell
+   mkdir %APPDATA%\pip
+   ```
+
+2. **创建或编辑配置文件**：
+
+   ```powershell
+   notepad %APPDATA%\pip\pip.ini
+   ```
+
+3. **在文件中写入以下内容**（以清华源为例）：
+
+   ```ini
+   [global]
+   index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+   trusted-host = pypi.tuna.tsinghua.edu.cn
+   ```
+
+   > `trusted-host` 是为了跳过 SSL 证书验证（某些镜像需要）。
+
+4. 保存并关闭。之后所有 `pip install` 都会自动使用该镜像。
+
+------
+
+### macOS / Linux 用户（供参考）
+
+配置文件路径为：`~/.pip/pip.conf`
+ 内容同上。
+
+------
+
+**✅ 验证是否生效**
+
+运行任意安装命令，观察是否从新源下载：
+
+```powershell
+pip install requests
+```
+
+输出中应包含类似：
+
+```text
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+------
+
+**🔁 恢复默认源**
+
+只需删除配置文件即可：
+
+```powershell
+del %APPDATA%\pip\pip.ini
+```
+
+或者将 `index-url` 改回官方源：
+
+```ini
+[global]
+index-url = https://pypi.org/simple
 ```
 
