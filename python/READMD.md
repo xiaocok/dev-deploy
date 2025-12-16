@@ -540,3 +540,54 @@ del %APPDATA%\pip\pip.ini
 index-url = https://pypi.org/simple
 ```
 
+
+
+## poetry
+
+**Poetry 会将虚拟环境创建在：**
+
+`~/.cache/pypoetry/virtualenvs/`（Linux/macOS）
+
+`%LOCALAPPDATA%\pypoetry\Cache\virtualenvs\`（Windows）
+
+目录下，这是为了统一管理所有项目的虚拟环境。
+
+
+
+### 本地虚拟环境：
+
+**全局**
+
+> Poetry **优先在项目目录下使用 `.venv` 文件夹作为虚拟环境**：
+
+```shell
+# 启用本地虚拟环境
+poetry config virtualenvs.in-project true
+
+# 检查当前使用的虚拟环境路径：
+poetry env info --path
+# 应该输出类似：/your/project/path/.venv
+
+# 查看当前配置
+poetry config --list
+# 输出内容包含：virtualenvs.in-project = true
+
+# 删除旧的虚拟环境（如有）
+poetry env remove python  # 或指定具体 Python 版本
+
+# 重新创建虚拟环境，自动创建 .venv
+poetry install
+```
+
+**临时覆盖（不推荐长期使用）**
+
+通过环境变量临时启用本地虚拟环境（无需改全局配置）
+
+```shell
+POETRY_VIRTUALENVS_IN_PROJECT=true poetry install
+```
+
+#### ❌ 常见误区
+
+- **不要手动创建 `venv` 或 `.venv` 并期望 Poetry 自动使用**：Poetry 只会在 `virtualenvs.in-project = true` 时**自己创建并管理 `.venv`**。
+- 如果你用 `python -m venv .venv` 手动创建，Poetry **不会**自动识别（除非你后续用 `poetry env use .venv/bin/python` 显式指定）。
