@@ -317,7 +317,7 @@ ip route show default | awk '{print $3}'
 
 **✅ 正确结论：访问 Windows 服务请用 `172.23.192.1`**
 
-- 如果你在 Windows 上运行了代理（如 Clash、v2ray，默认监听 `127.0.0.1:7890`），
+- 如果你在 Windows 上运行了代理（如 Clash、v2ray，默认监听 `127.0.0.1:7890`），**且允许局域网链接入Clash**
 - 那么在 WSL2 中应使用：`http://172.23.192.1:7890`
 
 
