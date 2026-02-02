@@ -135,9 +135,13 @@ https://skillsmp.com/zh
 
 ##### 推荐Skills
 
-- UI【ui-ux-pro-max-skill】：https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+- UI【ui-ux-pro-max-skill】：
 
-- web-design-guidelines：这是一个用于**审查网页 UI/UX 设计质量的 Skill**，可以让你的 AI Agent 按照现代 Web 界面设计规范检查代码和输出结果。
+  - https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+
+- web-design-guidelines：
+
+  - 这是一个用于**审查网页 UI/UX 设计质量的 Skill**，可以让你的 AI Agent 按照现代 Web 界面设计规范检查代码和输出结果。
 
   - ```text
     npx skills add https://github.com/vercel-labs/agent-skills --skill web-design-guidelines
@@ -159,12 +163,19 @@ https://skillsmp.com/zh
     打开 https://example.com 并截取全页截图
     ```
 
-- 脑暴、规划文档、测试(适合coding)【superpowers】：https://github.com/obra/superpowers
+- 脑暴、规划文档、测试(适合coding)【superpowers】：
 
-- 创建skills的skills【skill-creator】：https://github.com/anthropics/skills
+  - https://github.com/obra/superpowers
 
-- find-skills：npx skills add https://github.com/vercel-labs/skills --skill find-skills
+- 创建skills的skills【skill-creator】：
 
+  - https://github.com/anthropics/skills
+
+  - npx skills add https://github.com/anthropics/skills --skill skill-creator
+
+- find-skills：
+
+  - npx skills add https://github.com/vercel-labs/skills --skill find-skills
   - 使用时，通过 `npx skills find <关键词>` 命令
   - 收集与 “React 性能优化” 相关的 Skill：npx skills find react performance
 
