@@ -507,6 +507,20 @@ description: 完整代码审查（官方语法调用 B）
 
 无需额外适配，Claude 会自动把语法中的 `key=value` 解析为上下文参数，B 直接用 `{{参数名}}` 读取即可（和方式 1 一致）。
 
+```markdown
+---
+name: B-code-analyzer
+description: 代码分析技能（结构化读取参数）
+---
+# 执行步骤
+1. 从调用方结构化参数表中读取：
+   - scan_level: {{scan_level}} (默认值: moderate)
+   - ignore_rules: {{ignore_rules}} (默认值: "")
+   - input_file: {{input_file}} (必填，无值则终止)
+2. 执行脚本：
+   python scripts/analyze.py --level "{{scan_level}}" --ignore "{{ignore_rules}}" --file "{{input_file}}"
+```
+
 **核心语法规则**
 
 - 格式：`[[skill:技能名|参数1=值1|参数2=值2]]`；
@@ -699,4 +713,355 @@ description: 适配 MCP 协议的代码分析技能
 
 
 
+
+
+
+### skill获取mcp返回值
+
+要实现「Claude Skill 中调用 MCP 服务 → 获取其返回值 → 将返回值作为参数调用下一个 MCP/ Skill」的完整流程，这是 Claude 技能工程化调用的核心场景，关键在于**结构化捕获 MCP 返回值** + **上下文注入传递参数**，我会给你可直接落地的完整实现方案，包括 Skill 配置、MCP 调用、返回值捕获、参数传递全流程。
+
+#### 核心结论
+
+MCP 返回值的获取与传递分为 3 个核心步骤：
+
+1. **结构化调用 MCP**：用 Claude 官方 MCP 协议调用服务，指定返回格式为 JSON（便于解析）；
+2. **捕获 MCP 返回值**：在 Skill 中声明「提取 MCP 响应的结构化数据」，存入上下文；
+3. **传递返回值**：将捕获的返回值作为参数，注入下一个 MCP/Skill 的调用上下文。
+
+------
+
+#### 一、完整实现方案（Skill + MCP 调用 + 参数传递）
+
+**前置条件**
+
+1. 已部署 MCP 服务（如自定义的代码分析 MCP、数据处理 MCP）；
+2. Claude Agent 已配置 MCP 服务访问权限；
+3. Skill 目录结构规范（含 `SKILL.md`，可选脚本辅助解析）。
+
+
+
+**步骤 1：编写 Skill 的 SKILL.md（核心逻辑）**
+
+以下是完整的 `SKILL.md` 示例，实现「调用 MCP1 → 捕获返回值 → 调用 MCP2/Skill」：
+
+```markdown
+---
+name: mcp-pipeline
+description: 调用 MCP 服务并传递返回值到下一个 MCP/Skill
+---
+# 执行流程
+## 步骤 1：调用第一个 MCP 服务（代码分析 MCP）
+1. 调用 MCP 服务：code-analyzer-mcp
+   - MCP 调用参数：
+     {
+       "file_path": "{{user_input_file}}",
+       "scan_level": "strict"
+     }
+   - 强制要求 MCP 返回 **JSON 格式** 的结构化数据，示例格式：
+     {
+       "error_count": 5,
+       "error_rules": ["E501", "E302"],
+       "error_lines": [10, 25, 40],
+       "scan_result": "failed"
+     }
+
+2. 捕获 MCP 返回值：
+   - 从 MCP 响应中提取以下字段，存入上下文：
+     > 这里获取了`MCP响应.error_count`的参数，并存入了`mcp1_error_count`参数
+     - mcp1_error_count: {{MCP响应.error_count}}
+     - mcp1_error_rules: {{MCP响应.error_rules}}
+     - mcp1_scan_result: {{MCP响应.scan_result}}
+   - 验证返回值：若 scan_result 为空，终止执行并提示「MCP 服务调用失败，无返回值」。
+
+## 步骤 2：将 MCP 返回值作为参数，调用第二个 MCP 服务（报告生成 MCP）
+1. 调用 MCP 服务：report-generator-mcp
+   - MCP 调用参数（使用上一步的 MCP 返回值）：
+     > 使用上面存入的`mcp1_error_count`参数
+     {
+       "error_count": "{{mcp1_error_count}}",
+       "error_rules": "{{mcp1_error_rules}}",
+       "report_type": "code-scan",
+       "status": "{{mcp1_scan_result}}"
+     }
+   - 要求 MCP 返回 Markdown 格式的扫描报告。
+
+## 步骤 3（可选）：将 MCP2 返回值作为参数，调用本地 Skill
+1. 调用 Skill：report-export-skill
+   - 参数：
+     > MCP2响应没有存入新的参数，则直接取`MCP2响应.content`原始返回参数
+     - report_content: {{MCP2响应.content}}
+     - error_count: {{mcp1_error_count}}
+     - export_format: "pdf"
+2. 执行 Skill，导出最终报告为 PDF 文件。
+
+# 输入要求
+用户需传入待分析的代码文件路径：{{user_input_file}}（必填）
+
+# 输出要求
+最终输出 PDF 格式的代码扫描报告，保存路径：./output/code-scan-report.pdf
+```
+
+
+
+**步骤 2：API 方式调用该 Skill（程序化触发）**
+
+如果通过 API 触发 Skill，需用 MCP 协议结构化调用，确保返回值可被捕获：
+
+```python
+import anthropic
+import os
+import json
+
+# 初始化 Anthropic 客户端
+client = anthropic.Anthropic(
+    api_key=os.environ.get("ANTHROPIC_API_KEY"),
+)
+
+# 定义 Skill 调用函数
+def run_mcp_pipeline_skill(input_file):
+    # 调用 Claude Agent，触发 MCP 流水线 Skill
+    response = client.beta.agents.create_message(
+        agent_id="你的 Agent ID",  # 关联 MCP 服务的 Agent ID
+        max_tokens=4096,
+        temperature=0.0,  # 固定温度，确保返回值稳定
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    # 触发 Skill 并传入初始参数
+                    {
+                        "type": "text",
+                        "text": f"执行 mcp-pipeline Skill，分析文件：{input_file}"
+                    },
+                    # 显式指定 Skill 调用，确保上下文传递
+                    {
+                        "type": "tool_use",
+                        "name": "mcp-pipeline",
+                        "input": {
+                            "user_input_file": input_file
+                        }
+                    }
+                ]
+            }
+        ],
+        # 强制 MCP 响应为结构化格式
+        tools=[
+            {
+                "name": "code-analyzer-mcp",
+                "description": "代码分析 MCP 服务",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "file_path": {"type": "string"},
+                        "scan_level": {"type": "string"}
+                    },
+                    "required": ["file_path"]
+                }
+            },
+            {
+                "name": "report-generator-mcp",
+                "description": "报告生成 MCP 服务",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "error_count": {"type": "integer"},
+                        "error_rules": {"type": "array"},
+                        "report_type": {"type": "string"},
+                        "status": {"type": "string"}
+                    },
+                    "required": ["error_count", "status"]
+                }
+            }
+        ]
+    )
+
+    # 解析最终响应（含所有 MCP/Skill 的执行结果）
+    final_result = response.content[0].text
+    return final_result
+
+# 调用示例
+if __name__ == "__main__":
+    # 用户传入的初始文件路径
+    input_file = "./test.py"
+    # 执行 MCP 流水线
+    result = run_mcp_pipeline_skill(input_file)
+    # 输出最终结果
+    print("MCP 流水线执行结果：")
+    print(result)
+```
+
+
+
+**步骤 3：脚本辅助解析 MCP 返回值（进阶，提升稳定性）**
+
+如果 MCP 返回值格式复杂，可在 Skill 中调用本地脚本解析返回值，再传递参数：
+
+**1. Skill 中添加脚本调用步骤**
+
+```markdown
+## 步骤 1 补充：脚本解析 MCP 返回值
+3. 调用本地脚本解析 MCP 返回值：
+   python scripts/parse_mcp_response.py --mcp_response "{{MCP响应.raw}}" --output ./mcp1_result.json
+4. 从解析后的 JSON 文件中读取参数，存入上下文：
+   - mcp1_error_count: {{文件./mcp1_result.json.error_count}}
+   - mcp1_error_rules: {{文件./mcp1_result.json.error_rules}}
+```
+
+**2. 解析脚本 `parse_mcp_response.py`**
+
+```python
+import argparse
+import json
+import re
+
+def parse_mcp_response(mcp_raw_response):
+    """
+    解析 MCP 原始响应，提取结构化 JSON 数据
+    """
+    # 提取响应中的 JSON 部分（处理 MCP 响应可能包含的自然语言描述）
+    json_match = re.search(r"\{.*\}", mcp_raw_response, re.DOTALL)
+    if not json_match:
+        raise ValueError("MCP 响应中未找到 JSON 格式数据")
+    json_str = json_match.group(0)
+    # 解析 JSON
+    try:
+        mcp_result = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"MCP 返回值 JSON 解析失败：{e}")
+    # 验证必要字段
+    required_fields = ["error_count", "scan_result"]
+    for field in required_fields:
+        if field not in mcp_result:
+            raise ValueError(f"MCP 返回值缺失必要字段：{field}")
+    return mcp_result
+
+if __name__ == "__main__":
+    # 解析命令行参数
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mcp_response", required=True, help="MCP 原始返回值")
+    parser.add_argument("--output", required=True, help="解析结果输出文件路径")
+    args = parser.parse_args()
+
+    # 解析 MCP 返回值
+    try:
+        parsed_result = parse_mcp_response(args.mcp_response)
+        # 保存解析结果到文件
+        with open(args.output, "w") as f:
+            json.dump(parsed_result, f, indent=2)
+        print(f"解析完成，结果已保存到：{args.output}")
+    except Exception as e:
+        print(f"解析失败：{e}")
+        exit(1)
+```
+
+------
+
+#### 二、关键技术细节（避坑核心）
+
+**1. MCP 返回值捕获的核心规则**
+
+- 强制结构化返回
+
+  ：在 Skill 中明确要求 MCP 返回 
+
+  JSON 格式
+
+  （而非自然语言），示例：
+
+  ```markdown
+  强制要求 MCP 服务返回纯 JSON 格式数据，不包含任何自然语言描述、注释或额外文本
+  ```
+
+- **上下文变量命名**：给捕获的返回值定义清晰的变量名（如 `mcp1_error_count`），避免和其他参数冲突；
+
+- 返回值校验
+
+  ：必须验证关键字段是否存在，避免空值传递导致后续调用失败：
+
+  ```markdown
+  若 {{mcp1_scan_result}} 不在 ["success", "failed"] 范围内，终止执行并提示「MCP 返回值异常」
+  ```
+
+**2. 参数传递的两种核心方式**
+
+|     传递方式     |         适用场景          |                           实现方式                           |
+| :--------------: | :-----------------------: | :----------------------------------------------------------: |
+| **上下文占位符** | 简单参数（字符串 / 数字） |   `{{mcp1_error_count}}` 直接注入下一个 MCP/Skill 的参数中   |
+|   **文件中转**   |  复杂参数（数组 / 对象）  | 将 MCP 返回值写入 JSON 文件，下一个调用读取文件：`{{文件./mcp1_result.json}}` |
+
+**3. 调用下一个 Skill 的特殊处理**
+
+如果下一步是调用本地 Skill（而非 MCP），传递方式和之前的 Skill 嵌套一致，只需在 Skill 中声明：
+
+```markdown
+## 步骤 3：调用本地 Skill
+1. 调用 skill: report-export-skill，参数：
+   - 报告内容：{{MCP2响应.content}}
+   - 错误数量：{{mcp1_error_count}}
+   - 导出格式：pdf
+   - 源文件路径：{{user_input_file}}
+```
+
+------
+
+#### 三、完整执行流程梳理
+
+预览
+
+```mermaid
+graph TD
+    A["用户触发 Skill：mcp-pipeline --user_input_file ./test.py"] --> B["调用 MCP1：code-analyzer-mcp"]
+    B --> C["捕获 MCP1 返回值：error_count=5、error_rules=['E501']、scan_result='failed'"]
+    C --> D[验证返回值有效性]
+    D --> E["调用 MCP2：report-generator-mcp，参数传入 MCP1 返回值"]
+    E --> F["捕获 MCP2 返回值：Markdown 报告"]
+    F --> G["调用本地 Skill：report-export-skill，参数传入 MCP2 返回值"]
+    G --> H[输出最终 PDF 报告]
+```
+
+------
+
+#### 四、常见问题与解决方案
+
+**问题 1：MCP 返回值包含自然语言，无法解析**
+
+**解决方案**：在 Skill 中强制指定返回格式，示例：
+
+```markdown
+MCP 服务必须返回纯 JSON 格式数据，格式要求如下（无任何额外文本）：
+{
+  "error_count": 整数,
+  "error_rules": 数组,
+  "scan_result": "success" 或 "failed"
+}
+```
+
+
+
+**问题 2：返回值传递时类型不匹配（如字符串转整数）**
+
+**解决方案**：在 Skill 中声明类型转换，示例：
+
+```markdown
+将 {{mcp1_error_count}} 转换为整数类型，若转换失败，默认值为 0
+```
+
+
+
+**问题 3：MCP 调用超时，无返回值**
+
+**解决方案**：添加超时处理和重试逻辑，示例：
+
+```markdown
+调用 MCP 服务时，设置超时时间为 30 秒；若超时，重试 2 次；仍失败则终止并提示用户
+```
+
+------
+
+#### 总结
+
+1. **MCP 返回值捕获**：核心是「强制 MCP 返回结构化 JSON」+「在 Skill 中提取字段存入上下文」，复杂场景可通过脚本解析；
+2. **参数传递**：简单参数用 `{{变量名}}` 直接注入，复杂参数用 JSON 文件中转；
+3. **下一步调用**：调用 MCP 则按 MCP 协议传入参数，调用 Skill 则按嵌套调用规则传递；
+4. **关键保障**：添加返回值校验、类型转换、超时重试，避免流程中断。
 
