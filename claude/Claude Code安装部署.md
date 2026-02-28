@@ -276,6 +276,26 @@ ccr preset delete my-preset
 
 
 
+##### 接口验证
+
+默认端口：3456，跟ccr ui是同一个端口
+
+认证信息，APIKEY：123456，上面配置文件配置的
+
+```json
+curl http://localhost:3456/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 123456" \
+  -d '{
+    "model": "deepseek,deepseek-chat",
+    "messages": [{"role": "user", "content": "hello"}]
+  }'
+```
+
+
+
+
+
 #### DeepSeek
 
 https://api-docs.deepseek.com/zh-cn/guides/anthropic_api
