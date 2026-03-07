@@ -522,3 +522,64 @@ Anthropic base URL: http://localhost:11434
 ![Kimi k2.5 + Claude Code](./Claude Code安装部署.assets/1-3zUitixFsfZ7zdSSGEPQjw-1.gif)
 
 使用云模型时，跳过此步骤。
+
+
+
+
+
+##### 兼容Anthropic API模式
+
+https://docs.ollama.com/integrations/claude-code
+
+```bash
+# 设置环境变量
+export ANTHROPIC_AUTH_TOKEN=ollama
+export ANTHROPIC_API_KEY=""
+export ANTHROPIC_BASE_URL=http://localhost:11434
+
+# 启动claude, 指定模型
+claude --model gpt-oss:20b
+
+# 一行命令
+ANTHROPIC_AUTH_TOKEN=ollama ANTHROPIC_BASE_URL=http://localhost:11434 ANTHROPIC_API_KEY="" claude --model qwen3-coder 
+```
+
+
+
+##### 上下文长度设置
+
+https://docs.ollama.com/context-length
+
+###### App
+
+![Context length in Ollama app](Claude Code安装部署.assets/ollama-settings.png)
+
+###### 命令行
+
+```shell
+# 设置
+OLLAMA_CONTEXT_LENGTH=64000 ollama serve
+
+# 查看
+ollama ps
+
+# 显示
+NAME             ID              SIZE      PROCESSOR    CONTEXT    UNTIL
+gemma3:latest    a2af6cc3eb7f    6.6 GB    100% GPU     65536      2 minutes from now
+```
+
+###### NoThink
+
+> /set nothink 或者 /set think
+
+```shell
+# 运行模型
+ollama run qwen3.5:4b-q4_K_M
+# 设置nothink
+>>> /set nothink
+Set 'nothink' mode.
+>>> Send a message (/? for help)
+```
+
+
+
